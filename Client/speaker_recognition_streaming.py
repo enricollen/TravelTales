@@ -5,11 +5,13 @@ import struct
 import threading
 import time
 import wave
-
 import pveagle
 from pvrecorder import PvRecorder
+from dotenv import load_dotenv
 
-PV_RECORDER_FRAME_LENGTH = 512
+load_dotenv()
+
+PV_RECORDER_FRAME_LENGTH = int(os.getenv("PV_RECORDER_FRAME_LENGTH"))
 
 FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.AUDIO_OK: 'Good audio',
@@ -191,7 +193,7 @@ def test_operation(args):
                         duration = end_time - start_times[label]
                         if duration > args.min_speech_duration:
                             #here i save the audio buffer associated with the speech
-                            output_folder = "Client/resources/audio_output"
+                            output_folder = os.getenv("SPEECH_OUTPUT_FOLDER")
                             if not os.path.exists(output_folder):
                                 os.makedirs(output_folder)
                             export_path = f"{output_folder}/{label}_speech_{int(start_times[label])}.wav"
@@ -258,7 +260,7 @@ def main():
     test.add_argument(
         '--min_speech_duration',
         type=float,
-        default=4.0,
+        default=os.getenv("MIN_SPEECH_DURATION"),
         help='Minimum duration (in seconds) for speech segments to be saved. Default: 4.0')
 
     args = parser.parse_args()
