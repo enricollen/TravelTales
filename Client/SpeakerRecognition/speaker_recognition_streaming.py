@@ -2,7 +2,6 @@ import argparse
 import contextlib
 import os
 import struct
-import threading
 import time
 import wave
 import pveagle
