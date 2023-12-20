@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Tales Registration</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label, p {
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        label {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="range"] {
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:active {
+            background-color: grey; /* Change color when button is clicked */
+        }
+
+        #enrollmentMessage {
+            font-style: italic;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        #danteText {
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Travel Tales Registration</h1>
+    <form action="/enroll" method="post" onsubmit="startEnrollment()">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label>Categories:</label>
+        <p>Soccer</p>
+        <input type="range" id="soccerInterest" name="soccerInterest" min="0" max="2" value="0" required>
+
+        <p>Politics</p>
+        <input type="range" id="politicsInterest" name="politicsInterest" min="0" max="2" value="0" required>
+
+        <p>Photography</p>
+        <input type="range" id="photographyInterest" name="photographyInterest" min="0" max="2" value="0" required>
+
+        <br>
+        <button type="submit" id="enrollButton">Start Enrollment</button>
+        <div id="enrollmentMessage"></div>
+        <div id="danteText"></div>
+    </form>
+
+    <script>
+        function startEnrollment() {
+            document.getElementById("enrollButton").disabled = true;
+            document.getElementById("enrollmentMessage").innerHTML = "Please read the text below until the voice profile is ready...";
+            document.getElementById("danteText").innerHTML =
+                "Nel mezzo del cammin di nostra vita <br>" +
+                "mi ritrovai per una selva oscura, <br>" +
+                "ché la diritta via era smarrita. <br>" +
+                "Ahi quanto a dir qual era è cosa dura <br>"+
+                "esta selva selvaggia e aspra e forte <br>"+
+                "che nel pensier rinova la paura! <br>";
+        }
+    </script>
+</body>
+</html>
