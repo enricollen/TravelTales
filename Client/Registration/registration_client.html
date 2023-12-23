@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Tales Registration</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #formContainer {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            margin-right: 10px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="range"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .slider-container label {
+            margin-right: 20px;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        audio {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        p {
+            color: #4caf50;
+            display: none;
+        }
+
+        button#returnToHome {
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="formContainer">
+        <h1>Travel Tales Registration</h1>
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter your username" required>
+
+        <div class="slider-container">
+            <label for="politics">Politics:</label>
+            <input type="range" id="politics" min="1" max="5" step="1" value="3">
+        </div>
+
+        <div class="slider-container">
+            <label for="photography">Photography:</label>
+            <input type="range" id="photography" min="1" max="5" step="1" value="3">
+        </div>
+
+        <div class="slider-container">
+            <label for="soccer">Soccer:</label>
+            <input type="range" id="soccer" min="1" max="5" step="1" value="3">
+        </div>
+
+        <button id="startRecording">Start Recording</button>
+        <button id="stopRecording" disabled>Stop Recording</button>
+        <button id="sendToServer" disabled>Register</button>
+        <audio id="audioPlayer" controls></audio>
+        <p id="successMessage">Registered Successfully!</p>
+        <p id="testMessage" style="color: black; display: none; font-weight: bold;">Please read the text below until the voice profile is ready:</p>
+        <p id="italianText" style="color: black; display: none; font-style: italic; white-space: pre-line;">
+            Nel mezzo del cammin di nostra vita
+            mi ritrovai per una selva oscura,
+            ché la diritta via era smarrita.
+            Ahi quanto a dir qual era è cosa dura
+            esta selva selvaggia e aspra e forte
+            che nel pensier rinova la paura!
+        </p>
+        <button id="returnToHome">Return to Home</button>
+    </div>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let mediaRecorder;
+            let chunks = [];
+            let blob;
+
+            const startRecordingButton = document.getElementById('startRecording');
+            const stopRecordingButton = document.getElementById('stopRecording');
+            const sendToServerButton = document.getElementById('sendToServer');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const usernameInput = document.getElementById('username');
+            const politicsSlider = document.getElementById('politics');
+            const photographySlider = document.getElementById('photography');
+            const soccerSlider = document.getElementById('soccer');
+            const successMessage = document.getElementById('successMessage');
+            const returnToHomeButton = document.getElementById('returnToHome');
+            
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then((stream) => {
+
+                    mediaRecorder = new MediaRecorder(stream, {audioBitsPerSecond: 16000, mimeType: "audio/webm"});
+
+                    const audioTracks = stream.getAudioTracks();
+                    if (audioTracks.length > 0) {
+                        const track = audioTracks[0];
+                        const settings = track.getSettings();
+                        const numberOfChannels = settings.channelCount;
+
+                    }
+
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            chunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        blob = new Blob(chunks, { type: 'audio/webm;codecs=opus' });
+                        const audioUrl = URL.createObjectURL(blob);
+                        audioPlayer.src = audioUrl;
+                        sendToServerButton.disabled = !usernameInput.value || chunks.length === 0;
+                        successMessage.style.display = 'none';
+                        returnToHomeButton.style.display = 'none';
+                        chunks = [];
+                    };
+
+                    startRecordingButton.addEventListener('click', () => {
+                        mediaRecorder.start();
+                        startRecordingButton.disabled = true;
+                        stopRecordingButton.disabled = false;
+                        sendToServerButton.disabled = true;
+                        successMessage.style.display = 'none';
+                        returnToHomeButton.style.display = 'none';
+
+                        // show the Divina Commedia text when recording starts
+                        testMessage.style.display = 'block';
+                        italianText.style.display = 'block';
+                    });
+
+                    stopRecordingButton.addEventListener('click', () => {
+                        mediaRecorder.stop();
+                        startRecordingButton.disabled = false;
+                        stopRecordingButton.disabled = true;
+
+                        // hide Divina Commedia text when recording stops
+                        testMessage.style.display = 'none';
+                        italianText.style.display = 'none';
+                    });
+
+                    sendToServerButton.addEventListener('click', () => {
+                        sendToServer(blob);
+                    });
+
+                    returnToHomeButton.addEventListener('click', () => {
+                        window.location.href = 'registration_client.html';
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error accessing microphone:', error);
+                });
+
+                function sendToServer(blob) {
+                    const formData = new FormData();
+                    formData.append('audio', blob, 'recording.webm');
+                    formData.append('username', usernameInput.value);
+                    formData.append('politics', politicsSlider.value);
+                    formData.append('photography', photographySlider.value);
+                    formData.append('soccer', soccerSlider.value);
+
+                    fetch('http://localhost:5000/register', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Server response:', data);
+                            successMessage.style.display = 'block';
+                            returnToHomeButton.style.display = 'block';
+                            sendToServerButton.disabled = false;
+
+                            // pop-up window with the server response message
+                            window.alert('Data sent successfully! Server response: ' + data.message);
+                        } else {
+                            console.error('Error from server:', data.error);
+                            // Handle error appropriately, e.g., display an error message to the user
+                            window.alert('Error from server: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error parsing server response:', error);
+                    });
+                }
+
+
+        });
+    </script>
+</body>
+</html>
