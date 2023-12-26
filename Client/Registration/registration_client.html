@@ -87,19 +87,24 @@
         <label for="username">Username:</label>
         <input type="text" id="username" placeholder="Enter your username" required>
 
+        
+        <h3>Specify your interests:</h3>
+        <h6>[0: not interested, 0.5: slightly interested, 1: quite interested, 1.5: interested, 2: very interested]</h6>
+</h4>
         <div class="slider-container">
+
             <label for="politics">Politics:</label>
-            <input type="range" id="politics" min="1" max="5" step="1" value="3">
+            <input type="range" id="politics" min="0" max="2" step="0.5" value="1">
         </div>
 
         <div class="slider-container">
             <label for="photography">Photography:</label>
-            <input type="range" id="photography" min="1" max="5" step="1" value="3">
+            <input type="range" id="photography" min="0" max="2" step="0.5" value="1">
         </div>
 
         <div class="slider-container">
             <label for="soccer">Soccer:</label>
-            <input type="range" id="soccer" min="1" max="5" step="1" value="3">
+            <input type="range" id="soccer" min="0" max="2" step="0.5" value="1">
         </div>
 
         <button id="startRecording">Start Recording</button>
