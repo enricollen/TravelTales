@@ -3,6 +3,7 @@ import wave
 from flask import Flask, request, jsonify
 import os
 from flask_cors import CORS
+import pandas as pd
 import pveagle
 from dotenv import load_dotenv
 from pydub import AudioSegment
@@ -11,9 +12,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
+SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 API_KEY = os.getenv("API_KEY")
 SPEAKER_PROFILE_OUTPUT_PATH = os.getenv("SPEAKER_PROFILE_OUTPUT_PATH")
 CLIENT_AUDIO_UPLOAD_PATH = os.getenv("CLIENT_AUDIO_UPLOAD_PATH")
+USERS_TSV_FILENAME=os.getenv("USERS_TSV_FILENAME")
+USERS_TSV_PATH = os.path.join(SCRIPT_DIRECTORY, USERS_TSV_FILENAME)
 FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.AUDIO_OK: 'Good audio',
     pveagle.EagleProfilerEnrollFeedback.AUDIO_TOO_SHORT: 'Insufficient audio length',
@@ -61,11 +65,9 @@ def webm_opus_to_wav(webm_file_path, wav_file_path):
 def upload():
     try:
         username = request.form.get('username')
-        politics = request.form.get('politics')
-        photography = request.form.get('photography')
-        soccer = request.form.get('soccer')
-
-        print(username + " " + politics + " " + photography + " " + soccer)
+        politics = float(request.form.get('politics'))
+        photography = float(request.form.get('photography'))
+        soccer = float(request.form.get('soccer'))
 
         # save the audio file
         audio_file = request.files['audio']
@@ -106,8 +108,18 @@ def upload():
                     f.write(speaker_profile.to_bytes())
                 print('Speaker profile is saved to %s' % SPEAKER_PROFILE_OUTPUT_PATH)
 
-            # Process the data as needed
-            # For example, store data in a database, etc.
+            # check if csv already exists
+            if os.path.exists(USERS_TSV_PATH):
+                df = pd.read_csv(USERS_TSV_PATH, sep='\t')
+                new_user = {'username': username, 'interests': [politics, photography, soccer]}
+                if username in df['username'].values:
+                    print("Username already exists, aborting registration.")
+                    return jsonify({'success': False, 'error': 'Username already exists, please choose another one'})
+                df = pd.concat([df, pd.DataFrame([new_user])], ignore_index=True)
+            else:
+                df = pd.DataFrame({'username': [username], 'interests': [[politics, photography, soccer]]})
+
+            df.to_csv(USERS_TSV_PATH, index=False, sep='\t')
 
             return jsonify({'success': True, 'message': 'Registered Successfully!'})
 
@@ -129,4 +141,4 @@ if __name__ == '__main__':
     os.makedirs(SPEAKER_PROFILE_OUTPUT_PATH, exist_ok=True)
 
     #threaded=True to allow multiple connections
-    app.run(debug=True, threaded=True)
+    app.run(debug=True, host='0.0.0.0', threaded=True)
