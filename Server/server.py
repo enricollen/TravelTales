@@ -28,6 +28,11 @@ FEEDBACK_TO_DESCRIPTIVE_MSG = {
 
 
 def read_file(file_name, sample_rate):
+    """
+        Read audio file and make sure it is 16-bit mono and 16KHz, thus handling the audio formats supported by wave module.
+        file_name: the path to the audio file
+        sample_rate: the sample rate of the audio file
+    """
     try:
         with wave.open(file_name, mode="rb") as wav_file:
             channels = wav_file.getnchannels()
@@ -54,7 +59,9 @@ def read_file(file_name, sample_rate):
 
 def webm_opus_to_wav(webm_file_path, wav_file_path):
     """
-    convert webm to wav format and force audio to be 16-bit mono and 16KHz
+        convert webm to wav format and force audio to be 16-bit mono and 16KHz
+        webm_file_path: the path to the webm file
+        wav_file_path: the path to the wav file
     """
     audio = AudioSegment.from_file(webm_file_path, format="webm")
     audio = audio.set_frame_rate(16000)
@@ -62,7 +69,10 @@ def webm_opus_to_wav(webm_file_path, wav_file_path):
     audio.export(wav_file_path, format="wav")
 
 @app.route('/register', methods=['POST'])
-def upload():
+def register():
+    """
+        Register a new user to the system
+    """
     try:
         username = request.form.get('username')
         politics = float(request.form.get('politics'))
@@ -134,6 +144,27 @@ def upload():
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/feedback', methods=['POST'])
+def users_feedback():
+    """
+        Client sends the users feedback w.r.t. the proposed news in a dictionary:
+        {   proposed_news_id: : {
+            'passenger_id1': 'engagement_lvl1',
+            'passenger_id2': 'engagement_lvl2',
+            ...
+            }
+        }
+    """
+    pass
+
+@app.route('/news_suggestion', methods=['GET'])
+def news_suggetion(passengers_ids):
+    """
+        Client asks for a news to proposed, given the passengers on board
+    """
+    pass
 
 
 if __name__ == '__main__':
