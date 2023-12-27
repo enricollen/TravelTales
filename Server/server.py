@@ -141,6 +141,9 @@ def register():
             return jsonify({'success': False, 'error': str(e)})
         finally:
             eagle_profiler.delete()
+            # Delete the temporary webm & wav file after processing
+            os.remove(user_audio_wav_path)
+            os.remove(user_audio_webm_path)
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
@@ -164,7 +167,7 @@ def users_feedback(feedbacks_dict):
 @app.route('/news_suggestion', methods=['GET'])
 def news_suggestion(passengers_ids):
     """
-        Client asks for a news to proposed, given the passengers on board
+        Client asks for a news to propose, given the passengers on board
 
         passengers_ids: the list of passengers on board
     """
