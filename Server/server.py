@@ -147,9 +147,11 @@ def register():
 
 
 @app.route('/feedback', methods=['POST'])
-def users_feedback():
+def users_feedback(feedbacks_dict):
     """
-        Client sends the users feedback w.r.t. the proposed news in a dictionary:
+        Client sends the users' feedback w.r.t. the proposed news in a dictionary       
+
+        feedbacks_dict: the users feedbacks in the following format:
         {   proposed_news_id: : {
             'passenger_id1': 'engagement_lvl1',
             'passenger_id2': 'engagement_lvl2',
@@ -160,9 +162,11 @@ def users_feedback():
     pass
 
 @app.route('/news_suggestion', methods=['GET'])
-def news_suggetion(passengers_ids):
+def news_suggestion(passengers_ids):
     """
         Client asks for a news to proposed, given the passengers on board
+
+        passengers_ids: the list of passengers on board
     """
     pass
 
