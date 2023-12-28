@@ -1,6 +1,6 @@
 import struct
 import wave
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import os
 from flask_cors import CORS
 import pandas as pd
@@ -67,6 +67,10 @@ def webm_opus_to_wav(webm_file_path, wav_file_path):
     audio = audio.set_frame_rate(16000)
     audio = audio.set_sample_width(2)
     audio.export(wav_file_path, format="wav")
+
+@app.route('/', methods=['GET']) 
+def render_html():
+    return render_template("registration.html")
 
 @app.route('/register', methods=['POST'])
 def register():
