@@ -1,6 +1,6 @@
 import struct
 import wave
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 import os
 from flask_cors import CORS
 import pandas as pd
@@ -25,6 +25,12 @@ FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.NO_VOICE_FOUND: 'No voice found in audio',
     pveagle.EagleProfilerEnrollFeedback.QUALITY_ISSUE: 'Low audio quality due to bad microphone or environment'
 }
+
+
+def get_users_df():
+    if os.path.exists(USERS_TSV_PATH):
+        return pd.read_csv(USERS_TSV_PATH, sep='\t')
+    return None
 
 
 def read_file(file_name, sample_rate):
@@ -151,6 +157,15 @@ def register():
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route("/users", methods=["GET"])
+def users_list():
+    """
+    returns the list of registered users
+    """
+    df = get_users_df()
+    return Response(df.to_json(orient="records"), mimetype='application/json')
 
 
 @app.route('/feedback', methods=['POST'])
