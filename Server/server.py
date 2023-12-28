@@ -8,6 +8,8 @@ import pveagle
 from dotenv import load_dotenv
 from pydub import AudioSegment
 
+from ast import literal_eval
+
 load_dotenv()
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -18,6 +20,10 @@ SPEAKER_PROFILE_OUTPUT_PATH = os.getenv("SPEAKER_PROFILE_OUTPUT_PATH")
 CLIENT_AUDIO_UPLOAD_PATH = os.getenv("CLIENT_AUDIO_UPLOAD_PATH")
 USERS_TSV_FILENAME=os.getenv("USERS_TSV_FILENAME")
 USERS_TSV_PATH = os.path.join(SCRIPT_DIRECTORY, USERS_TSV_FILENAME)
+
+COLL_CSV_FILENAME=os.getenv("COLL_CSV_FILENAME")
+COLL_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, COLL_CSV_FILENAME)
+
 FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.AUDIO_OK: 'Good audio',
     pveagle.EagleProfilerEnrollFeedback.AUDIO_TOO_SHORT: 'Insufficient audio length',
@@ -31,6 +37,35 @@ def get_users_df():
     if os.path.exists(USERS_TSV_PATH):
         return pd.read_csv(USERS_TSV_PATH, sep='\t')
     return None
+
+coll_df = None
+
+def load_collection_df():
+    global coll_df
+    if coll_df is not None:
+        return coll_df
+    def f(x):
+        x = str(x)
+        if "," not in x:
+            x = x.replace(" ", ", ")
+        try:
+            return literal_eval(str(x))
+        except Exception as e:
+            print(e)
+            print("given x:" , x)
+            return []
+    conv = {'Embedding': lambda x: f(x)}
+    coll_df = pd.read_csv(COLL_CSV_PATH, converters=conv, index_col=0)
+    print(f"Loaded dataframe of {len(coll_df)} rows")
+    return coll_df
+
+
+import numpy as np
+
+def normalize_embedding(list):
+    vector = np.array(list)
+    normalized_vector = vector / np.linalg.norm(vector)
+    return normalized_vector.tolist()
 
 
 def read_file(file_name, sample_rate):
@@ -85,9 +120,16 @@ def register():
     """
     try:
         username = request.form.get('username')
-        politics = float(request.form.get('politics'))
-        photography = float(request.form.get('photography'))
-        soccer = float(request.form.get('soccer'))
+
+        categories = ['business','entertainment','politics','sport','tech']
+        
+        embeddings = []
+
+        for category in categories:
+            #TODO: should throw an error if one of the categories field was not given
+            embeddings.append(float(request.form.get(category)))
+
+        embeddings = normalize_embedding(embeddings)
 
         # save the audio file
         audio_file = request.files['audio']
@@ -131,13 +173,13 @@ def register():
             # check if csv already exists
             if os.path.exists(USERS_TSV_PATH):
                 df = pd.read_csv(USERS_TSV_PATH, sep='\t')
-                new_user = {'username': username, 'interests': [politics, photography, soccer]}
+                new_user = {'username': username, 'interests': embeddings}
                 if username in df['username'].values:
                     print("Username already exists, aborting registration.")
                     return jsonify({'success': False, 'error': 'Username already exists, please choose another one'})
                 df = pd.concat([df, pd.DataFrame([new_user])], ignore_index=True)
             else:
-                df = pd.DataFrame({'username': [username], 'interests': [[politics, photography, soccer]]})
+                df = pd.DataFrame({'username': [username], 'interests': [embeddings]})
 
             df.to_csv(USERS_TSV_PATH, index=False, sep='\t')
 
@@ -169,6 +211,9 @@ def users_list():
 
 @app.route('/speaker_profiles/<path:path>')
 def send_profile(path):
+    """
+    speaker profiles filename are in the form 'username.pv'
+    """
     return send_from_directory('speaker_profiles', path)
 
 
@@ -188,13 +233,21 @@ def users_feedback(feedbacks_dict):
     pass
 
 @app.route('/news_suggestion', methods=['GET'])
-def news_suggestion(passengers_ids):
+def news_suggestion():
     """
+        ?users GET paramter must contain the list of users separated by a ';' semicolon
         Client asks for a news to propose, given the passengers on board
 
-        passengers_ids: the list of passengers on board
+        passengers_usernames: the list of passengers on board
+
+        returns a json formatted list of suggested news
     """
-    pass
+    if "users" not in request.args:
+        return jsonify({'success': False, 'error': '\'users\' parameter was not given'})
+    passengers_usernames = request.args["users"].split(";")
+    print("received passengers names: ", passengers_usernames)
+    coll = load_collection_df()
+    return Response(coll.head(1).to_json(orient="records"), mimetype='application/json')
 
 
 if __name__ == '__main__':
