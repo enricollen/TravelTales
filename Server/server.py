@@ -1,6 +1,6 @@
 import struct
 import wave
-from flask import Flask, request, jsonify, render_template, Response
+from flask import Flask, request, jsonify, render_template, Response, send_from_directory
 import os
 from flask_cors import CORS
 import pandas as pd
@@ -166,6 +166,10 @@ def users_list():
     """
     df = get_users_df()
     return Response(df.to_json(orient="records"), mimetype='application/json')
+
+@app.route('/speaker_profiles/<path:path>')
+def send_profile(path):
+    return send_from_directory('speaker_profiles', path)
 
 
 @app.route('/feedback', methods=['POST'])
