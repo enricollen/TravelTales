@@ -1,7 +1,11 @@
 import PySimpleGUI as sg
 import requests
 
-PASSENGERS_ONBOARD = []
+PASSENGERS_ONBOARD = ["pluto"]
+
+
+WINDOW_WIDTH=700
+WINDOW_HEIGHT=500
 
 users_cached = None
 
@@ -19,6 +23,30 @@ def get_users_list(force_update = False):
 	except requests.RequestException as e:
 		sg.popup_error(f"Error retrieving user list: {e}")
 		return []
+	
+def fetch_suggested_news():
+	"""
+	returns the list of suggested news from the system,
+	it is enough to play the first one, we can eventually cache them for disconnection tolerance
+	the fields in each element of the list are:
+	- Link
+	- Title
+	- Summary
+	- Article
+	- Date
+	- Embedding
+	#TODO: will contain also the url of the image associated with the news eventually
+	"""
+	global PASSENGERS_ONBOARD
+	endpoint=f"http://localhost:5000/news_suggestion?users={';'.join(PASSENGERS_ONBOARD)}"
+	try:
+		response = requests.get(endpoint)
+		response.raise_for_status()
+		return response.json()
+	except Exception as e:
+		print(e)
+		return None
+
 
 import os
 from datetime import datetime
@@ -62,16 +90,16 @@ def download_vocal_profiles(list_of_usernames : list):
 			print(f"An error occurred while downloading voice profile for {username}")
 
 layout = [
-	[sg.Button("Get Users List", key="btn_get_users")],
+	[sg.Column([[sg.Sizer(WINDOW_WIDTH,0)]]+[[sg.Button("Set current passengers", key="btn_get_users"), sg.Button("Read news", key="btn_read_news")]], element_justification="c",expand_x=True, expand_y=True)],
 	[sg.Column([], key="-USERS-LIST-")],#[sg.Checkbox(user["username"], key=f"checkbox_{user['username']}") for user in get_users_list()],
 	[sg.Button("Save", key="btn_save_users_onboard", visible=False)],
 	[sg.HorizontalSeparator("grey")],
-	[sg.Text("Current users: ",key="current_users", pad=((0,0), (20,0)), justification="left", expand_y=True)]	#vertical_alignment="bottom", 
+	[sg.Text("Current passengers: " + " ".join(PASSENGERS_ONBOARD),key="current_users", pad=((0,0), (20,0)), justification="left", expand_y=True)]	#vertical_alignment="bottom", 
 ]
 
 #foo = sg.Column([], key="-USERS-LIST-")
 #foo.
-window = sg.Window("User List Window", layout, size=(700, 500))
+window = sg.Window("User List Window", layout, size=(WINDOW_WIDTH, WINDOW_HEIGHT))
 
 #window.
 
@@ -110,5 +138,19 @@ while True:
 		#PASSENGERS_ONBOARD=[x.Text for x in window["-USERS-LIST-"] if x.get()==True]
 		download_vocal_profiles(PASSENGERS_ONBOARD)
 		print("new passengers onboard: ", PASSENGERS_ONBOARD)
+	elif event == "btn_read_news":
+		news_list = fetch_suggested_news()
+		news_to_play = news_list[0]
+		text_to_be_read = news_to_play["summary"]
+		
+		# 1. send a request to the server endpoint for news suggestion
+		# 2. call a method read_news(news_summary : str) that performs TTS and plays the generated audio
+		#	the best choice could be to show a new pyGUI window where the stop button, 
+		#	the news text and (eventually) the image associated with the news is shown
+		#	a. show a button to stop news reproduction
+		#	b. text of the news
+		#	c. image associated to the news
+		# 3. once the news is played, the window is closed
+		pass
 
 window.close()
