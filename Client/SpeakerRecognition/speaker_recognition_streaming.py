@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PV_RECORDER_FRAME_LENGTH = int(os.getenv("PV_RECORDER_FRAME_LENGTH"))
-
+SILENCE_THRESHOLD = int(os.getenv("SILENCE_THRESHOLD"))
 FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.AUDIO_OK: 'Good audio',
     pveagle.EagleProfilerEnrollFeedback.AUDIO_TOO_SHORT: 'Insufficient audio length',
@@ -116,11 +116,12 @@ def test_operation(args):
         start_times = {label: None for label in speaker_labels}
         enrollment_animation = EnrollmentAnimation()
 
-        try:
-            recording_active = {label: False for label in speaker_labels}
-            start_times = {label: None for label in speaker_labels}
-            speech_buffer = {label: [] for label in speaker_labels}
+        silence_duration = 0.0
+        recording_active = {label: False for label in speaker_labels}
+        start_times = {label: None for label in speaker_labels}
+        speech_buffer = {label: [] for label in speaker_labels}
 
+        try:
             while True:
                 pcm = recorder.read()
                 if args.output_audio_path is not None:
@@ -130,6 +131,17 @@ def test_operation(args):
 
                 scores = eagle.process(pcm)
                 print_result(scores, speaker_labels)
+
+                no_speech_detected = all(confidence <= 0.0 for confidence in scores)
+
+                if no_speech_detected:
+                    silence_duration += eagle.frame_length / eagle.sample_rate
+                else:
+                    silence_duration = 0.0
+
+                if silence_duration > SILENCE_THRESHOLD:
+                    print(f'\nNo speech detected for {silence_duration:.2f} seconds. Stopping...')
+                    break
 
                 for label, confidence in zip(speaker_labels, scores):
                     if confidence > 0.0:

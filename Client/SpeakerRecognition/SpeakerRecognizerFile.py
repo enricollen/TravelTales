@@ -16,7 +16,7 @@ FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.QUALITY_ISSUE: 'Low audio quality due to bad microphone or environment'
 }
 
-class SpeakerRecognizer:
+class SpeakerRecognizerFile:
     def __init__(self):
         self.eagle_profiler = None
         self.eagle = None
@@ -161,7 +161,7 @@ class SpeakerRecognizer:
 
 """
 if __name__ == '__main__':
-    speaker_recognizer = SpeakerRecognizer()
+    speaker_recognizer = SpeakerRecognizerFile()
 
     # usage for enrollment
     enroll_audio_paths = ["enroll.wav"]
@@ -169,7 +169,7 @@ if __name__ == '__main__':
     speaker_recognizer.enroll(enroll_audio_paths, output_profile_path)
 
     # usage for testing
-    input_profile_paths = ["enrico.pv"]
+    input_profile_paths = ["Server/speaker_profiles/enrico.pv", "Server/speaker_profiles/marianna.pv"]
     test_audio_path = "test.wav"
     csv_output_path = "output.csv"
     speaker_recognizer.test(input_profile_paths, test_audio_path, csv_output_path)
