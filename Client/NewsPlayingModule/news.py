@@ -37,7 +37,15 @@ class News:
         """
         TODO
         """
-        return "https://img.iltempo.it/images/2023/12/23/094850031-fc81569b-98ee-4004-975f-6a5dc5d34b48.jpg"#"https://i.imgur.com/gmPj7jt.png"
+        import random
+        token_images_set = [
+            "https://img.iltempo.it/images/2023/12/23/094850031-fc81569b-98ee-4004-975f-6a5dc5d34b48.jpg",
+            "https://media-assets.wired.it/photos/615d7cea47dec6c387f9776d/master/w_1600%2Cc_limit/wired_placeholder_dummy.png",
+            "https://www.gedistatic.it/content/gnn/img/lastampa/2023/04/05/122323695-d7e1ee28-b6e9-4ce9-88e5-ce79823f1021.jpg"
+            #"https://immagini.editorialedomani.it/version/c:MTgxNmYyNmYtNzVjZi00:NDdjNmQ2/rai-matteo-renzi-ospite-alla-trasmissione-porta-a-porta.webp?f=16:9",
+            #"https://www.ilrestodelcarlino.it/image-service/version/c:MzIwNzNhZTYtNDc2ZC00:YzRkYjA0/matteo-renzi-oggi-fa-tappa-in-citta-alle-europee-ci-metto-la-faccia-e-in-regione-no-a-m5s-e-sovranisti.webp?f=16%3A9&q=1&w=1560"
+        ]
+        return token_images_set[random.randint(0, len(token_images_set)-1)]
     
     def get_news_image_local_path(self, target_width=350, target_height=350):
         """
@@ -87,6 +95,9 @@ class News:
     
     def get_summary(self):
         return self.news_dict["Summary"]
+    
+    def get_news_link(self):
+        return self.news_dict["Link"]
     
     def get_wav_local_path(self):
         return self.wavlocalpath
