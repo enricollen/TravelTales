@@ -4,15 +4,16 @@ import textwrap
 
 from NewsPlayingModule.utils.music_utilities import play_sound, is_sound_playing, pause_sounds, stop_sounds, unpause
 
-from Client.NewsPlayingModule.news import News
+from NewsPlayingModule.news import News
+from NewsPlayingModule.newsPlayer import NewsPlayer
 
 
-def player_window(news_player_obj : News):
+def player_window(news_player_obj : NewsPlayer):
 
-    NEWS_IMAGE_PATH = news_player_obj.get_news_image_local_path()#'NewsPlayingModule\\Images\\pylot.png'   #news_player_obj.get_news_image_path()
-    title = news_player_obj.get_title()
-    summary = news_player_obj.get_summary()
-    news_path = news_player_obj.get_wav_local_path() #"path/to/music"
+    current_news_obj = news_player_obj.get_current_news()
+
+    DEFAULT_IMAGE_PATH = 'NewsPlayingModule\\Images\\travel-tales.png'   #news_player_obj.get_news_image_path()
+
 
     sg.theme('Reddit')
     song_title_column = [
@@ -37,24 +38,24 @@ def player_window(news_player_obj : News):
 
 
     main = [
-        #[sg.Canvas(background_color='black', size=(480, 20), pad=None)],
+        
         [sg.Column(layout=player_info, justification='c',
                 element_justification='c', background_color='black')],
         [
-            #sg.Canvas(background_color='black', size=(40, 350), pad=None),
-            sg.Image(filename=NEWS_IMAGE_PATH,
-                    size=(350, 350), pad=None),
+            
+            sg.Image(filename=DEFAULT_IMAGE_PATH,
+                    size=(350, 350), pad=None, key="news_image"),
             sg.Text("News summary", key="news_summary", background_color="black", text_color="white", font=('Tahoma', 10), expand_x=True, justification="center")
-            #sg.Canvas(background_color='black', size=(40, 350), pad=None)
+            
         ],
-        #[sg.Canvas(background_color='black', size=(480, 10), pad=None)],
+        
         [sg.Column(song_title_column, background_color='black',
                 justification='c', element_justification='c')],
-        #[sg.Text('_'*80, background_color='black', text_color='white')],
+        
         [
             sg.Column([[
             sg.Sizer(0,100),
-            #sg.Canvas(background_color='black', size=(99, 200), pad=(0, 0)),
+            
             sg.Image(pad=(10, 0), filename=GO_BACK_IMAGE_PATH, enable_events=True,
                     size=(35, 44), key='previous', background_color='black'),
             sg.Image(filename=PLAY_SONG_IMAGE_PATH,
@@ -73,17 +74,15 @@ def player_window(news_player_obj : News):
     window = sg.Window('TravelTales Audio Player', layout=main, size=(
         700, 580), background_color='black', finalize=True, grab_anywhere=True, resizable=False,)
 
-    #directory = sg.popup_get_folder('Select Music Directory')
 
-    #songs_in_directory = get_files_inside_directory_not_recursive(directory)
-    #song_count = 1 #len(songs_in_directory)
-    #current_song_index = 0
 
     def update_song_display():
-        window["news_summary"].update(textwrap.fill(summary, 40))
-        window['song_name'].update(textwrap.fill(title, 60))
+        news_player_obj.add_news_to_played(current_news_obj)    #TODO: call this method only if the news is played for more than xx%
+        window['news_image'].update(current_news_obj.get_news_image_local_path())
+        window["news_summary"].update(textwrap.fill(current_news_obj.get_summary(), 40))
+        window['song_name'].update(textwrap.fill(current_news_obj.get_title(), 60))
         window['currently_playing'].update(
-            f'Playing: {textwrap.shorten(title, 100)}')
+            f'Playing: {textwrap.shorten(current_news_obj.get_title(), 100)}')
 
     #first_time = True
 
@@ -96,7 +95,7 @@ def player_window(news_player_obj : News):
             if is_sound_playing():
                 pass
             if is_sound_playing() == False:
-                play_sound(news_path)
+                play_sound(current_news_obj.get_wav_local_path())
                 update_song_display()
 
         elif event == 'pause':
@@ -107,26 +106,24 @@ def player_window(news_player_obj : News):
             pass
 
         elif event == 'next':
-            print("TODO: remove next button or implement behaviour")
-            pass
-            #if current_song_index + 1 < song_count:
-            #    stop_sounds()
-            #    current_song_index += 1
-            #    play_sound(songs_in_directory[current_song_index])
-            #    update_song_display()
-    #
-            #else:
-            #    print('Reached last song')
-            #    pass
+            next_news = news_player_obj.get_next_news(check_if_already_played=False)
+            if next_news == current_news_obj:
+                print("! next news is the same as current!")
+                pass
+            current_news_obj = next_news
+            update_song_display()
+            play_sound(current_news_obj.get_wav_local_path())
+
 
         elif event == 'previous':
-            print("TODO: remove previous button or implement behaviour")
-            pass
-            #if current_song_index + 1 <= song_count and current_song_index > 0:
-            #    stop_sounds()
-            #    current_song_index -= 1
-            #    play_sound(songs_in_directory[current_song_index])
-            #    update_song_display()
-            #else:
-            #    print('Reached first song')
+            prev_news = news_player_obj.get_previous_news()
+            if prev_news is None:
+                continue
+            if prev_news == current_news_obj:
+                print("! prev news is the same as current!")
+                pass
+            current_news_obj = prev_news
+            update_song_display()
+            play_sound(current_news_obj.get_wav_local_path())
+
     window.close()
