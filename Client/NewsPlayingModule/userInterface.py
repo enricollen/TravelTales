@@ -7,6 +7,21 @@ from NewsPlayingModule.utils.music_utilities import play_sound, is_sound_playing
 from NewsPlayingModule.news import News
 from NewsPlayingModule.newsPlayer import NewsPlayer
 
+"""
+This class handles the window dedicated to the audio reproduction of a given news
+it has to show in the window:
+- the text of the news
+- play / pause button to stop news reproduction
+- the title of the news
+- the image associated with the news
+
+When its window is closed, it has to stop news reproduction.
+
+TODO: decide if it has to handle also feedback gathering inside this window
+    I think it would be the best choice
+
+TODO: add elevator music in the background eventually
+"""
 
 def player_window(news_player_obj : NewsPlayer):
 

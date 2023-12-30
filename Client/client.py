@@ -140,8 +140,7 @@ while True:
 		window["btn_get_users"].Update(visible=False)
 		window["btn_save_users_onboard"].Update(visible=True)
 		window["-USERS-LIST-"].Update(visible=True)
-		#window
-		#window["-USERS-LIST-"].update(user_list_layout)
+
 	elif event == "btn_save_users_onboard":#"Save":
 		print("previous passengers onboard: ", PASSENGERS_ONBOARD)
 		print("Values: ", values)
@@ -150,12 +149,12 @@ while True:
 			key = "checkbox_" + user_infos["username"]
 			if key in values and values[key] == True:
 				PASSENGERS_ONBOARD.append(user_infos["username"])
-		#print("window[\"-USER_LIST-\"]", window["-USERS-LIST-"])
+
 		window["-USERS-LIST-"].Update(visible=False)
 		window["btn_save_users_onboard"].Update(visible=False)
 		window["btn_get_users"].Update(visible=True)
 		window["current_users"].Update("Current passengers: " + ", ".join(PASSENGERS_ONBOARD))
-		#PASSENGERS_ONBOARD=[x.Text for x in window["-USERS-LIST-"] if x.get()==True]
+
 		download_vocal_profiles(PASSENGERS_ONBOARD)
 
 		news_player_obj.update_passengers_list(PASSENGERS_ONBOARD)
@@ -164,37 +163,16 @@ while True:
 
 	elif event == "btn_read_news":
 		# 1. send a request to the server endpoint for news suggestion
-		#news_list = fetch_suggested_news()
-		#for i in range(len(news_list)):
-		#	news_to_play = news_list[i]
-		#	news_link = news_to_play["Link"]
-		#	if news_link in already_played_news:
-		#		continue
-		#	text_to_be_read = news_to_play["Summary"]
-		#	if "Wav-link" in news_to_play.keys() and news_to_play["Wav-link"] != None:
-		#		wav_download_link = news_to_play["Wav-link"]
-		#	elif "wav_file_name" in news_to_play.keys() and news_to_play["wav_file_name"] != None:
-		#		wav_download_link = SERVER_BASE_URL + "/audio-news/" + news_to_play["wav_file_name"]
-		#	else:
-		#		continue
-		#	break
-
-		#news_to_play = {'Link': 'https://www.huffpost.com/entry/pop-tart-bowl-edible-mascot_n_658ef0abe4b0b01d3e3fce8b', 'Title': 'Fans Can’t Get Enough Of Pop-Tart Football Mascot Who Craved Being Eaten', 'Summary': 'Kansas State beat North Carolina State 28-19 in the Pop-Tart Bowl on Thursday. At the end of the game, the mascot was lowered into what appeared to be a giant toaster. The bottom of the toaster apparatus opened up and spit out a version of the mascot made out of edible Pop Tart material.', 'Article': 'College football got a little weirder than usual on Thursday during the Pop-Tart Bowl ― an annual December game that’s undergone numerous name changes over the past three decades. This year’s game,  in which Kansas State beat North Carolina State  28-19, involved a bug-eyed, human-sized Pop Tart mascot. Advertisement At the end of the game, the mascot brandished a sign reading, “DREAMS REALLY DO COME TRUE” before being lowered into what appeared to be a giant toaster. Donna Summer’s “Hot Stuff” blared in the background. The bottom of the toaster apparatus opened up and spit out a version of the mascot (with no human actor inside ― we hope) made out of edible Pop-Tart material. Kansas State players grabbed at the anthropomorphic Pop-Tart’s body and shoved bits of him into their mouths in a celebratory fashion. And some people highlighted the gruesome, jammy aftermath. Advertisement But don’t feel bad for the Pop-Tart. Reporter Rodger Sherman  confirmed with the mascot  prior to its toasty demise that the breakfast pastry indeed yearned to be eaten. Support HuffPost The Stakes Have Never Been Higher At HuffPost, we believe that everyone needs high-quality journalism, but we understand that not everyone can afford to pay for expensive news subscriptions. That is why we are committed to providing deeply reported, carefully fact-checked news that is freely accessible to everyone. Our Life, Health and Shopping desks provide you with well-researched, expert-vetted information you need to live your best life, while HuffPost Personal, Voices and Opinion center real stories from real people. At HuffPost, we believe that everyone needs high-quality journalism, but we understand that not everyone can afford to pay for expensive news subscriptions. That is why we are committed to providing deeply reported, carefully fact-checked news that is freely accessible to everyone. A vibrant democracy is impossible without well-informed citizens. We cannot do this without your help. At HuffPost, we believe that a vibrant democracy is impossible without well-informed citizens. This is why we keep our journalism free for everyone, even as most other newsrooms have retreated behind expensive paywalls. Our newsroom continues to bring you hard-hitting investigations, well-researched analysis and timely takes on one of the most consequential elections in recent history. Reporting on the current political climate is a responsibility we do not take lightly — and we need your help.', 'Date': '2023-12-29 17:51:54', 'Embedding': [0.0740853281, 0.9689050053, 0.0846071079, 0.1375558835, 0.172204736], 'Wav-link': None, 'wav_file_name': 'Fans-Cant-Get-Enough-Of-Pop-Tart-Football-Mascot-Who-Craved-Being-Eaten.wav'}
-		#wav_download_link = "Fans-Cant-Get-Enough-Of-Pop-Tart-Football-Mascot-Who-Craved-Being-Eaten.wav"
-		
 		current_news = news_player_obj.get_next_news()
 
-		player_window(news_player_obj)
-
-    
 		# 2. call a method read_news(news_to_play : dict, wav_download_link : str) that plays the generated audio
 		#	the best choice could be to show a new pyGUI window where the stop button, 
 		#	the news text and (eventually) the image associated with the news is shown
 		#	a. show a button to stop news reproduction
 		#	b. text of the news
 		#	c. image associated to the news
-		# 3. once the news is played, the window is closed
-		#   NOTE: alternatively consider if it could be better to keep the window open until feedback gathering is complete
-		pass
+		# you should close this window only at the end of the session of usage, 
+		# i.e. to stop the service or to change the list of passengers
+		player_window(news_player_obj)
 
 window.close()

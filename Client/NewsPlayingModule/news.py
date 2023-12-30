@@ -1,15 +1,3 @@
-"""
-This class handles the window dedicated to the audio reproduction of a given news
-it has to show in the window:
-- the text of the news
-- play / pause button to stop news reproduction
-- (opt) the title of the news
-- (opt) the image associated with the news
-
-When its window is closed, it has to stop news reproduction.
-
-TODO: write down if it has to handle also feedback gathering inside this window
-"""
 import os
 import requests
 from datetime import datetime
@@ -28,6 +16,9 @@ def crop_to_dimensions(img : Image, target_width, target_height):
 #SERVER_BASE_URL = "http://localhost:5000"
 
 class News:
+    """
+    This class exposes the getters method to fetch wav, png and txt files associated to a news
+    """
     def __init__(self, news_dict : dict, wav_download_link : str) -> None:
         self.news_dict = news_dict
         self.wav_link = wav_download_link

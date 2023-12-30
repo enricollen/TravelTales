@@ -118,7 +118,6 @@ class NewsPlayer:
         - Embedding
         - Wav-link
         - wav_file_name
-        #TODO: will contain also the url of the image associated with the news eventually
         """
         print("Fetching news from the server...", end="")
         endpoint= SERVER_BASE_URL + f"/news_suggestion?users={';'.join(self.passengers)}"
