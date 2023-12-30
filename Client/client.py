@@ -1,7 +1,24 @@
 import PySimpleGUI as sg
 import requests
 
-PASSENGERS_ONBOARD = ["pluto"]
+
+
+def load_initial_state(file_path : str):
+	"""
+	returns a list of strings, made of the lines of the given textual file
+	"""
+	ret = None
+	with open(file_path, "r") as f:
+		ret = f.readlines()
+	ret = [el.replace("\n", "") for el in ret if el != "\n"]
+	return ret
+
+PASSENGERS_ONBOARD = load_initial_state("passengers_onboard.txt")
+
+already_played_news = load_initial_state("already_played_news_links.txt")
+
+
+SERVER_BASE_URL = "http://localhost:5000"
 
 
 WINDOW_WIDTH=700
@@ -13,7 +30,7 @@ def get_users_list(force_update = False):
 	global users_cached
 	if users_cached is not None and not force_update:
 		return users_cached
-	url = "http://localhost:5000/users"
+	url = SERVER_BASE_URL + "/users"
 	try:
 		response = requests.get(url)
 		response.raise_for_status()  # Raise an exception for HTTP errors (4xx, 5xx)
@@ -35,10 +52,12 @@ def fetch_suggested_news():
 	- Article
 	- Date
 	- Embedding
+	- Wav-link
+	- wav_file_name
 	#TODO: will contain also the url of the image associated with the news eventually
 	"""
 	global PASSENGERS_ONBOARD
-	endpoint=f"http://localhost:5000/news_suggestion?users={';'.join(PASSENGERS_ONBOARD)}"
+	endpoint= SERVER_BASE_URL + f"/news_suggestion?users={';'.join(PASSENGERS_ONBOARD)}"
 	try:
 		response = requests.get(endpoint)
 		response.raise_for_status()
@@ -57,7 +76,7 @@ def download_vocal_profiles(list_of_usernames : list):
 	If a newer profile is available on the server, downloads the updated version, otherwhise keeps the local one without redownloading
 	"""
 	OUTPUT_DIR ="speaker_profiles"
-	SERVER_ENDPOINT = "http://localhost:5000/speaker_profiles/"
+	SERVER_ENDPOINT = SERVER_BASE_URL + "/speaker_profiles/"
 
 	for username in list_of_usernames:
 		filename = f"{username}.pv"
