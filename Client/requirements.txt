@@ -1,2 +1,3 @@
 PySimpleGUI
 requests
+pygame

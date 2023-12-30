@@ -1,6 +1,8 @@
 import PySimpleGUI as sg
 import requests
 
+from NewsPlayingModule.newsPlayer import NewsPlayer
+from NewsPlayingModule.userInterface import player_window
 
 
 def load_initial_state(file_path : str):
@@ -158,18 +160,37 @@ while True:
 		download_vocal_profiles(PASSENGERS_ONBOARD)
 		print("new passengers onboard: ", PASSENGERS_ONBOARD)
 	elif event == "btn_read_news":
-		news_list = fetch_suggested_news()
-		news_to_play = news_list[0]
-		text_to_be_read = news_to_play["summary"]
-		
 		# 1. send a request to the server endpoint for news suggestion
-		# 2. call a method read_news(news_summary : str) that performs TTS and plays the generated audio
+		news_list = fetch_suggested_news()
+		
+		for i in range(len(news_list)):
+			news_to_play = news_list[i]
+			news_link = news_to_play["Link"]
+			if news_link in already_played_news:
+				continue
+			text_to_be_read = news_to_play["Summary"]
+			if "Wav-link" in news_to_play.keys() and news_to_play["Wav-link"] != None:
+				wav_download_link = news_to_play["Wav-link"]
+			elif "wav_file_name" in news_to_play.keys() and news_to_play["wav_file_name"] != None:
+				wav_download_link = SERVER_BASE_URL + "/audio-news/" + news_to_play["wav_file_name"]
+			else:
+				continue
+			break
+
+		news_player_obj = NewsPlayer(news_to_play, wav_download_link)
+
+		player_window(news_player_obj)
+
+		already_played_news.append(news_link)
+    
+		# 2. call a method read_news(news_to_play : dict, wav_download_link : str) that plays the generated audio
 		#	the best choice could be to show a new pyGUI window where the stop button, 
 		#	the news text and (eventually) the image associated with the news is shown
 		#	a. show a button to stop news reproduction
 		#	b. text of the news
 		#	c. image associated to the news
 		# 3. once the news is played, the window is closed
+		#   NOTE: alternatively consider if it could be better to keep the window open until feedback gathering is complete
 		pass
 
 window.close()
