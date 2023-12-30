@@ -216,6 +216,13 @@ def send_profile(path):
     """
     return send_from_directory('speaker_profiles', path)
 
+@app.route('/audio-news/<path:path>')
+def get_audio_news(path):
+    """
+    audio news are wav file whose file name is indicated in their corresponding collection.csv row
+    """
+    return send_from_directory('generated_audio', path)
+
 
 @app.route('/feedback', methods=['POST'])
 def users_feedback(feedbacks_dict):
@@ -247,7 +254,7 @@ def news_suggestion():
     passengers_usernames = request.args["users"].split(";")
     print("received passengers names: ", passengers_usernames)
     coll = load_collection_df()
-    return Response(coll.head(1).to_json(orient="records"), mimetype='application/json')
+    return Response(coll.head(10).to_json(orient="records"), mimetype='application/json')
 
 
 if __name__ == '__main__':
