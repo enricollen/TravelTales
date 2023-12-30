@@ -32,9 +32,10 @@ class News:
         token_images_set = [
             "https://img.iltempo.it/images/2023/12/23/094850031-fc81569b-98ee-4004-975f-6a5dc5d34b48.jpg",
             "https://media-assets.wired.it/photos/615d7cea47dec6c387f9776d/master/w_1600%2Cc_limit/wired_placeholder_dummy.png",
-            "https://www.gedistatic.it/content/gnn/img/lastampa/2023/04/05/122323695-d7e1ee28-b6e9-4ce9-88e5-ce79823f1021.jpg"
-            #"https://immagini.editorialedomani.it/version/c:MTgxNmYyNmYtNzVjZi00:NDdjNmQ2/rai-matteo-renzi-ospite-alla-trasmissione-porta-a-porta.webp?f=16:9",
-            #"https://www.ilrestodelcarlino.it/image-service/version/c:MzIwNzNhZTYtNDc2ZC00:YzRkYjA0/matteo-renzi-oggi-fa-tappa-in-citta-alle-europee-ci-metto-la-faccia-e-in-regione-no-a-m5s-e-sovranisti.webp?f=16%3A9&q=1&w=1560"
+            "https://www.gedistatic.it/content/gnn/img/lastampa/2023/04/05/122323695-d7e1ee28-b6e9-4ce9-88e5-ce79823f1021.jpg",
+            "https://st.ilfattoquotidiano.it/wp-content/uploads/2023/07/13/matteo-renzi-3-690x362.jpg",
+            "https://img.ilgcdn.com/sites/default/files/styles/md/public/foto/2022/02/09/1644440349-3dc46de61eddef823b2fab3362e0d577.jpg",
+            "https://static.ilmanifesto.it/2023/12/27lettere2-matteo-renzi-lapresse.jpg"    
         ]
         return token_images_set[random.randint(0, len(token_images_set)-1)]
     
@@ -76,6 +77,7 @@ class News:
                 return output_path
             else:
                 print("Failed to download the image. Status code:", response.status_code)
+                print(f"Download url {remote_url}")
                 return None
         except Exception as e:
             print("An error occurred:", str(e))

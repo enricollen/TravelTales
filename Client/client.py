@@ -163,7 +163,7 @@ while True:
 
 	elif event == "btn_read_news":
 		# 1. send a request to the server endpoint for news suggestion
-		current_news = news_player_obj.get_next_news()
+		#current_news = news_player_obj.get_next_news()
 
 		# 2. call a method read_news(news_to_play : dict, wav_download_link : str) that plays the generated audio
 		#	the best choice could be to show a new pyGUI window where the stop button, 

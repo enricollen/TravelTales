@@ -25,15 +25,19 @@ class NewsPlayer:
         if hasattr(self, "cached") and self.cached is not None:
             news_list = self.cached 
         else:
-            print(f"hasattr(self, 'cached'): {hasattr(self, 'cached')}")
-            if hasattr(self, 'cached'):
-                print(f"self.cached is not None: {self.cached is not None}")
-                print(f"self.cached: {self.cached}")
+            #print(f"hasattr(self, 'cached'): {hasattr(self, 'cached')}")
+            #if hasattr(self, 'cached'):
+            #    print(f"self.cached is not None: {self.cached is not None}")
+            #    print(f"self.cached: {self.cached}")
             news_list = self.fetch_suggested_news()
 
         #if self.__news_index == -1:
         #    self.__news_index = 0
         initial = self.__news_index
+
+        if self.__news_index == len(news_list) - 1:
+            print(f"Rewinding news_list since the end was reached")
+            self.__news_index = -1
         
         for self.__news_index in range(self.__news_index+1, len(news_list)):
             news_to_play = news_list[self.__news_index]
@@ -57,7 +61,7 @@ class NewsPlayer:
 
         self.__current_news = News(news_to_play, wav_download_link)
 
-        print(f"[DEBUG]: initial: {initial}\t after the loop: {self.__news_index}")
+        #print(f"[DEBUG]: initial: {initial}\t after the loop: {self.__news_index}")
         return self.__current_news
     
     def get_current_news(self) -> News:
