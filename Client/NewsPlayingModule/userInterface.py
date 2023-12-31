@@ -6,6 +6,12 @@ from NewsPlayingModule.utils.music_utilities import play_sound, is_sound_playing
 
 from NewsPlayingModule.news import News
 from NewsPlayingModule.newsPlayer import NewsPlayer
+from usersManager import UsersManager
+
+from DataVisualizationModule.userInterface import data_visualization_window
+
+WINDOW_WIDTH = 700
+WINDOW_HEIGHT = 580
 
 """
 This class handles the window dedicated to the audio reproduction of a given news
@@ -23,7 +29,7 @@ TODO: decide if it has to handle also feedback gathering inside this window
 TODO: add elevator music in the background eventually
 """
 
-def player_window(news_player_obj : NewsPlayer):
+def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager):
 
     current_news_obj = news_player_obj.get_current_news()
 
@@ -63,6 +69,15 @@ def player_window(news_player_obj : NewsPlayer):
             sg.Text("News summary", key="news_summary", background_color="black", text_color="white", font=('Tahoma', 10), expand_x=True, justification="center")
             
         ],
+        [sg.Column([
+			[sg.Sizer(WINDOW_WIDTH,0)],
+			[
+                sg.Button("Show plots", key="btn_show_plots", expand_x=True),
+                sg.Sizer(WINDOW_WIDTH/3, 0), 
+                sg.Button("Start", key="btn_feedback_gathering", expand_x=True)]
+			],
+            element_justification="center", background_color="black")	#,expand_x=True, expand_y=True
+		],
         
         [sg.Column(song_title_column, background_color='black',
                 justification='c', element_justification='c')],
@@ -87,7 +102,7 @@ def player_window(news_player_obj : NewsPlayer):
 
     ]
     window = sg.Window('TravelTales Audio Player', layout=main, size=(
-        700, 580), background_color='black', finalize=True, grab_anywhere=True, resizable=False,)
+        WINDOW_WIDTH, WINDOW_HEIGHT), background_color='black', finalize=True, grab_anywhere=True, resizable=False,)
 
 
 
@@ -140,5 +155,9 @@ def player_window(news_player_obj : NewsPlayer):
             current_news_obj = prev_news
             update_song_display()
             play_sound(current_news_obj.get_wav_local_path())
+
+        elif event == 'btn_show_plots':
+            data_visualization_window(users_manager_obj.get_passengers_objs(), [current_news_obj])
+            pass
 
     window.close()

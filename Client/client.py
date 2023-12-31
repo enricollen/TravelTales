@@ -5,6 +5,9 @@ from NewsPlayingModule.news import News
 from NewsPlayingModule.newsPlayer import NewsPlayer
 from NewsPlayingModule.userInterface import player_window
 
+from usersManager import UsersManager
+from user import User
+
 
 def load_initial_state(file_path : str):
 	"""
@@ -16,79 +19,14 @@ def load_initial_state(file_path : str):
 	ret = [el.replace("\n", "") for el in ret if el != "\n"]
 	return ret
 
-PASSENGERS_ONBOARD = load_initial_state("passengers_onboard.txt")
 
-already_played_news = load_initial_state("already_played_news_links.txt")
+users_manager_obj = UsersManager(load_initial_state("passengers_onboard.txt"))
 
-
-news_player_obj = NewsPlayer(PASSENGERS_ONBOARD, already_played_news)
-
-
-SERVER_BASE_URL = "http://localhost:5000"
-
+news_player_obj = NewsPlayer(users_manager_obj.get_passengers_usernames(), load_initial_state("already_played_news_links.txt"))
 
 WINDOW_WIDTH=700
 WINDOW_HEIGHT=500
 
-users_cached = None
-
-def get_users_list(force_update = False):
-	global users_cached
-	if users_cached is not None and not force_update:
-		return users_cached
-	url = SERVER_BASE_URL + "/users"
-	try:
-		response = requests.get(url)
-		response.raise_for_status()  # Raise an exception for HTTP errors (4xx, 5xx)
-		users_data = response.json()
-		users_cached = users_data
-		return users_data
-	except requests.RequestException as e:
-		sg.popup_error(f"Error retrieving user list: {e}")
-		return []
-
-
-
-import os
-from datetime import datetime
-
-def download_vocal_profiles(list_of_usernames : list):
-	"""
-	downloads the updated vocal profiles for the given list of usernames.
-	If a newer profile is available on the server, downloads the updated version, otherwhise keeps the local one without redownloading
-	"""
-	OUTPUT_DIR ="speaker_profiles"
-	SERVER_ENDPOINT = SERVER_BASE_URL + "/speaker_profiles/"
-
-	for username in list_of_usernames:
-		filename = f"{username}.pv"
-		localpath = os.path.join(OUTPUT_DIR, filename)
-		remote_url = SERVER_ENDPOINT + filename
-		if os.path.exists(localpath):
-			local_last_modified = os.path.getmtime(localpath)
-			response = requests.head(remote_url)
-
-			if response.status_code == 200:
-				remote_last_modified = response.headers.get("Last-Modified")
-
-				if remote_last_modified:
-					remote_last_modified = float(datetime.strptime(remote_last_modified, "%a, %d %b %Y %H:%M:%S %Z").timestamp())
-					if remote_last_modified <= local_last_modified:
-						print(f"The local version of voice profile for {username} does not need an update")
-						continue
-		
-		# if we arrive here, we have to download the updated version of voice profile
-		try:		
-			response = requests.get(remote_url)
-			
-			if response.status_code == 200:
-				os.makedirs(os.path.dirname(localpath), exist_ok=True)
-				with open(localpath, "wb") as output_file:
-					output_file.write(response.content)
-					print(f"Downloaded newer voice profile for user {username}")
-		except Exception as e:
-			print(e)
-			print(f"An error occurred while downloading voice profile for {username}")
 
 layout = [
 		[sg.Column([
@@ -106,7 +44,7 @@ layout = [
 	],
 	
 	[sg.HorizontalSeparator("grey")],
-	[sg.Text("Current passengers: " + ", ".join(PASSENGERS_ONBOARD),key="current_users", justification="left")]	#pad=((0,0), (20,0)), expand_y=True, vertical_alignment="bottom", 
+	[sg.Text("Current passengers: " + ", ".join(users_manager_obj.get_passengers_usernames()),key="current_users", justification="left")]	#pad=((0,0), (20,0)), expand_y=True, vertical_alignment="bottom", 
 ]
 
 #foo = sg.Column([], key="-USERS-LIST-")
@@ -134,7 +72,7 @@ while True:
 	elif event == "btn_get_users":#"Get Users List":
 		#global user_list_layout
 		user_list_layout = [
-			[sg.Checkbox(user["username"], key=f"checkbox_{user['username']}")] for user in get_users_list(force_update=True) if f"checkbox_{user['username']}" not in values.keys()
+			[sg.Checkbox(user["username"], key=f"checkbox_{user['username']}")] for user in UsersManager.get_users_list(force_update=True) if f"checkbox_{user['username']}" not in values.keys()
 		]
 		window.extend_layout(window["-USERS-LIST-"], user_list_layout)
 		window["btn_get_users"].Update(visible=False)
@@ -142,24 +80,24 @@ while True:
 		window["-USERS-LIST-"].Update(visible=True)
 
 	elif event == "btn_save_users_onboard":#"Save":
-		print("previous passengers onboard: ", PASSENGERS_ONBOARD)
+		print("previous passengers onboard: ", users_manager_obj.get_passengers_usernames())
 		print("Values: ", values)
 		PASSENGERS_ONBOARD = []
-		for user_infos in get_users_list():
+		for user_infos in UsersManager.get_users_list():
 			key = "checkbox_" + user_infos["username"]
 			if key in values and values[key] == True:
 				PASSENGERS_ONBOARD.append(user_infos["username"])
 
+		users_manager_obj.set_passengers_list(PASSENGERS_ONBOARD)
+
 		window["-USERS-LIST-"].Update(visible=False)
 		window["btn_save_users_onboard"].Update(visible=False)
 		window["btn_get_users"].Update(visible=True)
-		window["current_users"].Update("Current passengers: " + ", ".join(PASSENGERS_ONBOARD))
+		window["current_users"].Update("Current passengers: " + ", ".join(users_manager_obj.get_passengers_usernames()))
 
-		download_vocal_profiles(PASSENGERS_ONBOARD)
-
-		news_player_obj.update_passengers_list(PASSENGERS_ONBOARD)
+		news_player_obj.update_passengers_list(users_manager_obj.get_passengers_usernames())
 		
-		print("new passengers onboard: ", PASSENGERS_ONBOARD)
+		print("new passengers onboard: ", users_manager_obj.get_passengers_usernames())
 
 	elif event == "btn_read_news":
 		# 1. send a request to the server endpoint for news suggestion
@@ -173,6 +111,6 @@ while True:
 		#	c. image associated to the news
 		# you should close this window only at the end of the session of usage, 
 		# i.e. to stop the service or to change the list of passengers
-		player_window(news_player_obj)
+		player_window(news_player_obj, users_manager_obj)
 
 window.close()
