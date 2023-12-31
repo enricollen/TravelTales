@@ -92,6 +92,11 @@ class News:
     def get_news_link(self):
         return self.news_dict["Link"]
     
+    def get_embedding(self):
+        ret = self.news_dict["Embedding"]
+        #print(f"get_embedding on news; returning : {ret}\t type: {type(ret)}")
+        return ret
+    
     def get_wav_local_path(self):
         return self.wavlocalpath
 

@@ -34,8 +34,22 @@ FEEDBACK_TO_DESCRIPTIVE_MSG = {
 
 
 def get_users_df():
+
+    def f(x):
+        x = str(x)
+        if "," not in x:
+            x = x.replace(" ", ", ")
+        try:
+            return literal_eval(str(x))
+        except Exception as e:
+            print(e)
+            print("given x:" , x)
+            return []
+        
+    conv = {'interests': lambda x: f(x)}
+
     if os.path.exists(USERS_TSV_PATH):
-        return pd.read_csv(USERS_TSV_PATH, sep='\t')
+        return pd.read_csv(USERS_TSV_PATH, sep='\t', converters=conv)
     return None
 
 coll_df = None
