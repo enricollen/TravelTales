@@ -8,6 +8,8 @@ import pveagle
 from dotenv import load_dotenv
 from pydub import AudioSegment
 
+from retrievalSystem import RetrievalSystem
+
 from ast import literal_eval
 
 load_dotenv()
@@ -267,8 +269,11 @@ def news_suggestion():
         return jsonify({'success': False, 'error': '\'users\' parameter was not given'})
     passengers_usernames = request.args["users"].split(";")
     print("received passengers names: ", passengers_usernames)
+    users_df = get_users_df()
+    passengers_embeddings = users_df[users_df['username'].isin(passengers_usernames)]['interests'].to_list()
     coll = load_collection_df()
-    return Response(coll.head(10).to_json(orient="records"), mimetype='application/json')
+    ret_json = RetrievalSystem.retrieve(coll, passengers_embeddings, 10)
+    return Response(ret_json, mimetype='application/json')
 
 
 if __name__ == '__main__':
