@@ -74,7 +74,7 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
 			[
                 sg.Button("Show plots", key="btn_show_plots", expand_x=True),
                 sg.Sizer(WINDOW_WIDTH/3, 0), 
-                sg.Button("Start", key="btn_feedback_gathering", expand_x=True)]
+                sg.Button("Start listening", key="btn_feedback_gathering", expand_x=True)]
 			],
             element_justification="center", background_color="black")	#,expand_x=True, expand_y=True
 		],

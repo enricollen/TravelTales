@@ -10,6 +10,8 @@ from DataVisualizationModule.pcaPlot import pca_plot
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib
+import textwrap
+
 matplotlib.use('TkAgg')
 
 #sg.set_options(dpi_awareness=True)
@@ -18,7 +20,7 @@ matplotlib.use('TkAgg')
 #https://github.com/PySimpleGUI/PySimpleGUI/issues/5410
 
 
-WINDOW_WIDTH = 700
+WINDOW_WIDTH = 750
 WINDOW_HEIGHT = 580
 
 """
@@ -39,15 +41,6 @@ def data_visualization_window(users_list : list[User], news_list : list[News]):
     
     sg.theme('Reddit')
 
-    embeddings = []
-
-    for user in users_list:
-        embeddings.append(user.get_embedding())
-
-    for news in news_list:
-        embeddings.append(news.get_embedding())
-
-
     main = [
         
         [sg.Column(layout=[[sg.Text('Data Visualization'
@@ -64,16 +57,46 @@ def data_visualization_window(users_list : list[User], news_list : list[News]):
             
         ],
         
-        [sg.HorizontalSeparator("white")],
+        [sg.HorizontalSeparator("grey")],
+        [   sg.Sizer(0, 150),
+            sg.Frame('', [
+                [sg.Sizer(WINDOW_WIDTH/2 -30)],[sg.Text('Passengers', background_color='black', pad=0, border_width=0, text_color='white', expand_x=True, justification='center')]
+                ], key="users_column", background_color='black', border_width=1, size=(WINDOW_WIDTH/2 -30, 150)),
+            sg.Frame('', [
+                [sg.Sizer(WINDOW_WIDTH/2 -30)],[sg.Text('News', background_color='black', pad=0, border_width=0, text_color='white', expand_x=True, justification='center')]
+                ], key="news_column", background_color='black', border_width=1, size=(WINDOW_WIDTH/2 -30, 150)),
+        ]
 
     ]
     window = sg.Window('TravelTales Data Visualization', layout=main, size=(
-        WINDOW_WIDTH, WINDOW_HEIGHT), background_color='black', finalize=True, grab_anywhere=True, resizable=False,)
+        WINDOW_WIDTH, WINDOW_HEIGHT), background_color='black', finalize=True, grab_anywhere=True, resizable=False, font=('Tahoma', 12))
+
+    embeddings = []
+    colors = []
+    
+    user_list_layout = []
+    news_list_layout = []
+
+    bullet = "• "
+
+    for user in users_list:
+        embeddings.append(user.get_embedding())
+        colors.append(user.get_color())
+        user_list_layout.append([sg.Text(bullet + user.get_username(), background_color='black', pad=0, border_width=0, text_color=user.get_color())] )
+
+    for news in news_list:
+        embeddings.append(news.get_embedding())
+        colors.append(news.get_color())
+        news_list_layout.append([sg.Text(textwrap.shorten(bullet + news.get_title(), 50), background_color='black', pad=0, border_width=0, text_color=news.get_color())] )
+
+    window.extend_layout(window["users_column"], user_list_layout)
+    window.extend_layout(window["news_column"], news_list_layout)
+    
 
     dpi = window.TKroot.winfo_fpixels('1i')
     #print(f"DPI BEFORE is {dpi}")
-    fig = radar_chart(embeddings, dpi=dpi)
-    fig2 = pca_plot(embeddings)
+    fig = radar_chart(embeddings, colors, dpi=dpi)
+    fig2 = pca_plot(embeddings, colors)
     #print(f"DPI AFTER is {window.TKroot.winfo_fpixels('1i')}")
 
     fig_canvas_agg = draw_figure(window['radar_plot'].TKCanvas, fig)

@@ -3,12 +3,14 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from sklearn.decomposition import PCA
 
-def pca_plot(embeddings_array, n_components=2, title='PCA Plot', figsize=(3.5, 3.5), dpi=95):
+def pca_plot(embeddings_array, colors, n_components=2, title='PCA Plot', figsize=(3.5, 3.5), dpi=95):
     # Assuming you have a numpy array 'embeddings' with shape (num_articles, 5)
     # Replace this with your actual data
     # For example, if you have a list of embeddings, you can convert it to a numpy array like this:
     # embeddings = np.array(list_of_embeddings)
     # Create and fit PCA model
+    if colors is not None:
+      assert len(embeddings_array) == len(colors), "the given colors array len is != from len(embeddings_array)"
 
     embeddings_array = np.array(embeddings_array)
 
@@ -31,9 +33,9 @@ def pca_plot(embeddings_array, n_components=2, title='PCA Plot', figsize=(3.5, 3
         return fig
     
     if n_components == 2:
-        ax.scatter(embeddings_PCA[:, 0], embeddings_PCA[:, 1], alpha=0.5)
+        ax.scatter(embeddings_PCA[:, 0], embeddings_PCA[:, 1], c=colors, alpha=0.5)
     else:
-        ax.scatter(embeddings_PCA[:, 0], embeddings_PCA[:, 1], embeddings_PCA[:, 2], alpha=0.5)
+        ax.scatter(embeddings_PCA[:, 0], embeddings_PCA[:, 1], embeddings_PCA[:, 2], c=colors, alpha=0.5)
 
     # Add labels and title
     ax.set_title(f'{n_components}D PCA of News Article Embeddings')

@@ -1,6 +1,6 @@
 class User:
 
-    COLORS = ["blue", "green", "yellow", "orange", "purple"]
+    COLORS = ["blue", "green", "yellow", "orange", "purple", "brown"]
     COLOR_INDEX = 0
 
     def __init__(self, username, embedding, path_to_voice_profile) -> None:

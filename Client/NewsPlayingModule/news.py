@@ -19,9 +19,15 @@ class News:
     """
     This class exposes the getters method to fetch wav, png and txt files associated to a news
     """
+
+    COLORS = ["blue", "green", "yellow", "orange", "purple", "brown"]
+    COLOR_INDEX = 0
+
     def __init__(self, news_dict : dict, wav_download_link : str) -> None:
         self.news_dict = news_dict
         self.wav_link = wav_download_link
+        self.color = News.COLORS[::-1][News.COLOR_INDEX]
+        News.COLOR_INDEX = (News.COLOR_INDEX + 1) % len(News.COLORS)
         self.__fetch_wav()
         
     def get_news_image_link(self):
@@ -96,6 +102,9 @@ class News:
         ret = self.news_dict["Embedding"]
         #print(f"get_embedding on news; returning : {ret}\t type: {type(ret)}")
         return ret
+    
+    def get_color(self):
+        return self.color
     
     def get_wav_local_path(self):
         return self.wavlocalpath
