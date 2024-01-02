@@ -5,7 +5,6 @@ import time
 import wave
 from dotenv import load_dotenv
 from pvrecorder import PvRecorder
-from enrollment_animation import EnrollmentAnimation
 import pveagle
 
 load_dotenv()
@@ -57,80 +56,33 @@ class SpeakerRecognizerStreaming:
         print(result, end='', flush=True)
 
 
-    def enroll(self, model_path, library_path, audio_device_index, output_audio_path, output_profile_path):
-        try:
-            eagle_profiler = pveagle.create_profiler(
-                access_key=self.access_key,
-                model_path=model_path,
-                library_path=library_path)
-        except pveagle.EagleError as e:
-            print("Failed to initialize Eagle: %s" % e)
-            raise
-
-        print('Eagle version: %s' % eagle_profiler.version)
-        recorder = PvRecorder(frame_length=PV_RECORDER_FRAME_LENGTH, device_index=audio_device_index)
-        print("Recording audio from '%s'" % recorder.selected_device)
-        num_enroll_frames = eagle_profiler.min_enroll_samples // PV_RECORDER_FRAME_LENGTH
-        sample_rate = eagle_profiler.sample_rate
-        enrollment_animation = EnrollmentAnimation()
-        print('Please keep speaking until the enrollment percentage reaches 100%')
-        try:
-            with contextlib.ExitStack() as file_stack:
-                if output_audio_path is not None:
-                    enroll_audio_file = file_stack.enter_context(wave.open(output_audio_path, 'wb'))
-                    enroll_audio_file.setnchannels(1)
-                    enroll_audio_file.setsampwidth(2)
-                    enroll_audio_file.setframerate(sample_rate)
-
-                enroll_percentage = 0.0
-                enrollment_animation.start()
-                while enroll_percentage < 100.0:
-                    enroll_pcm = list()
-                    recorder.start()
-                    for _ in range(num_enroll_frames):
-                        input_frame = recorder.read()
-                        if output_audio_path is not None:
-                            enroll_audio_file.writeframes(struct.pack('%dh' % len(input_frame), *input_frame))
-                        enroll_pcm.extend(input_frame)
-                    recorder.stop()
-
-                    enroll_percentage, feedback = eagle_profiler.enroll(enroll_pcm)
-                    enrollment_animation.percentage = enroll_percentage
-                    enrollment_animation.feedback = ' - %s' % FEEDBACK_TO_DESCRIPTIVE_MSG[feedback]
-
-            speaker_profile = eagle_profiler.export()
-            enrollment_animation.stop()
-            with open(output_profile_path, 'wb') as f:
-                f.write(speaker_profile.to_bytes())
-            print('\nSpeaker profile is saved to %s' % output_profile_path)
-
-        except KeyboardInterrupt:
-            print('\nStopping enrollment. No speaker profile is saved.')
-            enrollment_animation.stop()
-        except pveagle.EagleActivationLimitError:
-            print('AccessKey has reached its processing limit')
-        except pveagle.EagleError as e:
-            print('Failed to enroll speaker: %s' % e)
-        finally:
-            recorder.stop()
-            recorder.delete()
-            eagle_profiler.delete()
-
-    def test(self, model_path, library_path, audio_device_index, output_audio_path,
+    def listen(self, audio_device_index, output_audio_path,
              input_profile_paths, min_speech_duration=15):
+        """
+            Starts the recording of the passengers voices using the Eagle API.
+            While listening, it saves slices of passengers' speeches (at least 4 seconds long)
+            whenever the speaker stops talking.
+            audio_device_index: the index of the audio device to use
+            output_audio_path: the path to the output audio file
+            input_profile_paths: the paths to the speaker profiles to use
+            min_speech_duration: the minimum duration of a speech to be considered valid
+        """
         profiles = list()
         speaker_labels = list()
+
         for profile_path in input_profile_paths:
             speaker_labels.append(os.path.splitext(os.path.basename(profile_path))[0])
+            profile_path = os.path.join(os.path.dirname(__file__), "..", "speaker_profiles", profile_path)
             with open(profile_path, 'rb') as f:
                 profile = pveagle.EagleProfile.from_bytes(f.read())
             profiles.append(profile)
+        speaker_counters = {label: 1 for label in speaker_labels}
 
         try:
             eagle = pveagle.create_recognizer(
                 access_key=self.access_key,
-                model_path=model_path,
-                library_path=library_path,
+                model_path=None, #using the default model
+                library_path=None, #using the default library
                 speaker_profiles=profiles)
 
             recorder = PvRecorder(device_index=audio_device_index, frame_length=eagle.frame_length)
@@ -145,7 +97,6 @@ class SpeakerRecognizerStreaming:
 
                 print('Listening for audio... (press Ctrl+C to stop)')
                 start_times = {label: None for label in speaker_labels}
-                enrollment_animation = EnrollmentAnimation()
 
                 silence_duration = 0.0
                 recording_active = {label: False for label in speaker_labels}
@@ -171,7 +122,7 @@ class SpeakerRecognizerStreaming:
                             silence_duration = 0.0
 
                         if silence_duration > SILENCE_THRESHOLD:
-                            print(f'\nNo speech detected for {silence_duration:.2f} seconds. Stopping...')
+                            print(f'\nNo speech detected for {silence_duration:.2f} seconds. Stop Listening...')
                             break
 
                         for label, confidence in zip(speaker_labels, scores):
@@ -193,7 +144,7 @@ class SpeakerRecognizerStreaming:
                                     output_folder = os.getenv("SPEECH_OUTPUT_FOLDER")
                                     if not os.path.exists(output_folder):
                                         os.makedirs(output_folder)
-                                    export_path = f"{output_folder}/{label}_speech_{int(start_times[label])}.wav"
+                                    export_path = f"{output_folder}/{label}_speech_{speaker_counters[label]}.wav"
                                     with wave.open(export_path, 'wb') as export_file:
                                         export_file.setnchannels(1)
                                         export_file.setsampwidth(2)
@@ -202,6 +153,7 @@ class SpeakerRecognizerStreaming:
                                             struct.pack('%dh' % len(speech_buffer[label]), *speech_buffer[label]))
                                     print(f"\nSpeaker '{label}' talked with confidence > 0.0 for {duration:.2f} seconds\n"
                                           f"Audio saved to: {export_path}\n")
+                                    speaker_counters[label] += 1
                                 recording_active[label] = False
 
                 except KeyboardInterrupt:
@@ -221,32 +173,17 @@ class SpeakerRecognizerStreaming:
             print('Device #%d: %s' % (index, name))
 
 
-if __name__ == '__main__':
+"""if __name__ == '__main__':
     speaker_recognizer = SpeakerRecognizerStreaming()
-
-    #enrollment
-    """enroll_model_path = None
-    enroll_library_path = None
-    enroll_audio_device_index = 0
-    enroll_output_audio_path = None #"Server/speaker_profiles/enrico.pv"
-    enroll_output_profile_path = "marianna.pv"
-    speaker_recognizer.enroll(
-        model_path=enroll_model_path,
-        library_path=enroll_library_path,
-        audio_device_index=enroll_audio_device_index,
-        output_audio_path=enroll_output_audio_path,
-        output_profile_path=enroll_output_profile_path)"""
 
     #testing
     test_model_path = None
     test_library_path = None
     test_audio_device_index = 0
     test_output_audio_path = None
-    test_input_profile_paths = ["Server/speaker_profiles/enrico.pv", "Server/speaker_profiles/marianna.pv"]
+    test_input_profile_paths = ["enrico.pv"]
     test_min_speech_duration = MIN_SPEECH_DURATION
-    speaker_recognizer.test(
-        model_path=test_model_path,
-        library_path=test_library_path,
+    speaker_recognizer.listen(
         audio_device_index=test_audio_device_index,
         output_audio_path=test_output_audio_path,
         input_profile_paths=test_input_profile_paths,
@@ -254,3 +191,4 @@ if __name__ == '__main__':
 
     #show available audio devices
     #speaker_recognizer.show_audio_devices()
+"""

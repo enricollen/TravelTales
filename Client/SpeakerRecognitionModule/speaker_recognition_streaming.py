@@ -6,7 +6,7 @@ import time
 import wave
 import pveagle
 from pvrecorder import PvRecorder
-from enrollment_animation import EnrollmentAnimation
+from Client.SpeakerRecognitionModule.enrollmentAnimation import EnrollmentAnimation
 from dotenv import load_dotenv
 
 load_dotenv()
