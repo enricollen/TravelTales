@@ -41,7 +41,8 @@ class News:
             "https://www.gedistatic.it/content/gnn/img/lastampa/2023/04/05/122323695-d7e1ee28-b6e9-4ce9-88e5-ce79823f1021.jpg",
             "https://st.ilfattoquotidiano.it/wp-content/uploads/2023/07/13/matteo-renzi-3-690x362.jpg",
             "https://img.ilgcdn.com/sites/default/files/styles/md/public/foto/2022/02/09/1644440349-3dc46de61eddef823b2fab3362e0d577.jpg",
-            "https://static.ilmanifesto.it/2023/12/27lettere2-matteo-renzi-lapresse.jpg"    
+            "https://static.ilmanifesto.it/2023/12/27lettere2-matteo-renzi-lapresse.jpg",
+            "https://assets.nationbuilder.com/comitaticivici/pages/12778/meta_images/original/Imagoeconomica_1985936.jpg"  
         ]
         return token_images_set[random.randint(0, len(token_images_set)-1)]
     
