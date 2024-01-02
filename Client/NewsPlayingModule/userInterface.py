@@ -1,3 +1,4 @@
+import threading
 import PySimpleGUI as sg
 import os
 import textwrap
@@ -7,6 +8,8 @@ from NewsPlayingModule.utils.music_utilities import play_sound, is_sound_playing
 from NewsPlayingModule.news import News
 from NewsPlayingModule.newsPlayer import NewsPlayer
 from usersManager import UsersManager
+
+from FeedbackEstimationModule.FeedbackEstimator import FeedbackEstimator
 
 from DataVisualizationModule.userInterface import data_visualization_window
 
@@ -29,7 +32,7 @@ TODO: decide if it has to handle also feedback gathering inside this window
 TODO: add elevator music in the background eventually
 """
 
-def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager):
+def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager, feedback_estimator: FeedbackEstimator):
 
     current_news_obj = news_player_obj.get_current_news()
 
@@ -74,7 +77,7 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
 			[
                 sg.Button("Show plots", key="btn_show_plots", expand_x=True),
                 sg.Sizer(WINDOW_WIDTH/3, 0), 
-                sg.Button("Start listening", key="btn_feedback_gathering", expand_x=True)]
+                sg.Button("Collect Feedback", key="btn_feedback_gathering", expand_x=True)]
 			],
             element_justification="center", background_color="black")	#,expand_x=True, expand_y=True
 		],
@@ -104,7 +107,9 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
     window = sg.Window('TravelTales Audio Player', layout=main, size=(
         WINDOW_WIDTH, WINDOW_HEIGHT), background_color='black', finalize=True, grab_anywhere=True, resizable=False,)
 
-
+    def compute_feedback_threaded():
+        feedback_estimator.compute_feedback(current_news_obj)
+        window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
 
     def update_song_display():
         news_player_obj.add_news_to_played(current_news_obj)    #TODO: call this method only if the news is played for more than xx%
@@ -115,6 +120,8 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
             f'Playing: {textwrap.shorten(current_news_obj.get_title(), 100)}')
 
     #first_time = True
+        
+    feedback_mode = False
 
     while True:
         event, values = window.read()
@@ -159,5 +166,17 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
         elif event == 'btn_show_plots':
             data_visualization_window(users_manager_obj.get_passengers_objs(), [current_news_obj])
             pass
+
+        elif event == 'btn_feedback_gathering':
+            feedback_mode = not feedback_mode
+
+            if feedback_mode:
+                window['btn_feedback_gathering'].update(disabled=True, text='Collecting Feedback...')
+                compute_feedback_thread = threading.Thread(target=compute_feedback_threaded)
+                compute_feedback_thread.start()
+            else:
+                if compute_feedback_thread and compute_feedback_thread.is_alive():
+                    compute_feedback_thread.join()
+                window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
 
     window.close()

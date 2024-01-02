@@ -4,6 +4,7 @@ import requests
 from NewsPlayingModule.news import News
 from NewsPlayingModule.newsPlayer import NewsPlayer
 from NewsPlayingModule.userInterface import player_window
+from FeedbackEstimationModule.FeedbackEstimator import FeedbackEstimator
 
 from usersManager import UsersManager
 from user import User
@@ -23,6 +24,8 @@ def load_initial_state(file_path : str):
 users_manager_obj = UsersManager(load_initial_state("passengers_onboard.txt"))
 
 news_player_obj = NewsPlayer(users_manager_obj.get_passengers_usernames(), load_initial_state("already_played_news_links.txt"))
+
+feedback_estimator = FeedbackEstimator(users_manager_obj.get_passengers_usernames())
 
 WINDOW_WIDTH=700
 WINDOW_HEIGHT=500
@@ -111,6 +114,6 @@ while True:
 		#	c. image associated to the news
 		# you should close this window only at the end of the session of usage, 
 		# i.e. to stop the service or to change the list of passengers
-		player_window(news_player_obj, users_manager_obj)
+		player_window(news_player_obj, users_manager_obj, feedback_estimator)
 
 window.close()
