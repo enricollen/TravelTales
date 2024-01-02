@@ -2,7 +2,7 @@ import PySimpleGUI as sg
 import os
 import textwrap
 
-from NewsPlayingModule.utils.music_utilities import play_sound, is_sound_playing, pause_sounds, stop_sounds, unpause
+from NewsPlayingModule.utils.music_utilities import MusicUtilites #play_sound, is_sound_playing, pause_sounds, stop_sounds, unpause
 
 from NewsPlayingModule.news import News
 from NewsPlayingModule.newsPlayer import NewsPlayer
@@ -12,6 +12,8 @@ from DataVisualizationModule.userInterface import data_visualization_window
 
 WINDOW_WIDTH = 700
 WINDOW_HEIGHT = 580
+
+MUSIC_FOLDER = "audio-music"
 
 """
 This class handles the window dedicated to the audio reproduction of a given news
@@ -115,24 +117,25 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
             f'Playing: {textwrap.shorten(current_news_obj.get_title(), 100)}')
 
     #first_time = True
+    MusicUtilites.start_music(MUSIC_FOLDER)
 
     while True:
         event, values = window.read()
         if event == sg.WIN_CLOSED:
-            stop_sounds()
+            MusicUtilites.stop_sounds()
             break
         elif event == 'play':
-            if is_sound_playing():
+            if MusicUtilites.is_sound_playing():
                 pass
-            if is_sound_playing() == False:
-                play_sound(current_news_obj.get_wav_local_path())
+            if MusicUtilites.is_sound_playing() == False:
+                MusicUtilites.play_sound(current_news_obj.get_wav_local_path())
                 update_song_display()
 
         elif event == 'pause':
-            if is_sound_playing():
-                pause_sounds()
+            if MusicUtilites.is_sound_playing() or MusicUtilites.is_music_playing():
+                MusicUtilites.pause_sounds()
             else:
-                unpause()
+                MusicUtilites.unpause()
             pass
 
         elif event == 'next':
@@ -142,7 +145,7 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
                 pass
             current_news_obj = next_news
             update_song_display()
-            play_sound(current_news_obj.get_wav_local_path())
+            MusicUtilites.play_sound(current_news_obj.get_wav_local_path())
 
 
         elif event == 'previous':
@@ -154,7 +157,7 @@ def player_window(news_player_obj : NewsPlayer, users_manager_obj : UsersManager
                 pass
             current_news_obj = prev_news
             update_song_display()
-            play_sound(current_news_obj.get_wav_local_path())
+            MusicUtilites.play_sound(current_news_obj.get_wav_local_path())
 
         elif event == 'btn_show_plots':
             data_visualization_window(users_manager_obj.get_passengers_objs(), [current_news_obj])
