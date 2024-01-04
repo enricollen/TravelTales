@@ -1,3 +1,6 @@
 PySimpleGUI
 requests
 pygame
+librosa
+tensorflow
+pvrecorder

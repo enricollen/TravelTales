@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import MinMaxScaler
 
 def pca_plot(embeddings_array, colors, n_components=2, title='PCA Plot', figsize=(3.5, 3.5), dpi=95):
     # Assuming you have a numpy array 'embeddings' with shape (num_articles, 5)
@@ -22,6 +23,11 @@ def pca_plot(embeddings_array, colors, n_components=2, title='PCA Plot', figsize
     
     pca = PCA(n_components=n_components)
     embeddings_PCA = pca.fit_transform(embeddings_array)
+    
+    # Calculate the norm for each row (axis=1)
+    norms = np.linalg.norm(embeddings_PCA, axis=1)
+    # Divide each PCA component by its norm
+    embeddings_PCA = embeddings_PCA / norms[:, np.newaxis]
 
     # Plot the 2D embeddings
     #plt.figure(figsize=figsize)
@@ -36,7 +42,7 @@ def pca_plot(embeddings_array, colors, n_components=2, title='PCA Plot', figsize
         ax.scatter(embeddings_PCA[:, 0], embeddings_PCA[:, 1], c=colors, alpha=0.5)
     else:
         ax.scatter(embeddings_PCA[:, 0], embeddings_PCA[:, 1], embeddings_PCA[:, 2], c=colors, alpha=0.5)
-
+    
     # Add labels and title
     ax.set_title(f'{n_components}D PCA of News Article Embeddings')
     #ax.set_xlabel('Principal Component 1')
