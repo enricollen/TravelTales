@@ -99,6 +99,13 @@ while True:
 		window["current_users"].Update("Current passengers: " + ", ".join(users_manager_obj.get_passengers_usernames()))
 
 		news_player_obj.update_passengers_list(users_manager_obj.get_passengers_usernames())
+  
+		# update passengers_onboard.txt
+		with open("passengers_onboard.txt", 'w') as file:
+			file.write('\n'.join(users_manager_obj.get_passengers_usernames()))
+
+		# update the passengers in the FeedbackEstimator
+		feedback_estimator = FeedbackEstimator(users_manager_obj.get_passengers_usernames())
 		
 		print("new passengers onboard: ", users_manager_obj.get_passengers_usernames())
 
