@@ -21,6 +21,11 @@ class FeedbackEstimator(object):
         self.audioSentimentClassifier = AudioSentimentClassifier()
         self.audioSentimentClassifier.load_model()
 
+    def update_passengers_list(self, passenger_list):
+        """
+        this method has to be called after that the list of passengers is modified
+        """
+        self.passengers_onboard = passenger_list
 
     def compute_feedback(self, current_news_obj: News, feedback_window=None):
         """

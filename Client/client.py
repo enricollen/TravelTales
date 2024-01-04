@@ -105,7 +105,7 @@ while True:
 			file.write('\n'.join(users_manager_obj.get_passengers_usernames()))
 
 		# update the passengers in the FeedbackEstimator
-		feedback_estimator = FeedbackEstimator(users_manager_obj.get_passengers_usernames())
+		feedback_estimator.update_passengers_list(users_manager_obj.get_passengers_usernames())
 		
 		print("new passengers onboard: ", users_manager_obj.get_passengers_usernames())
 
