@@ -22,40 +22,38 @@ class FeedbackEstimator(object):
         self.audioSentimentClassifier.load_model()
 
 
-    def compute_feedback(self, current_news_obj:News):
+    def compute_feedback(self, current_news_obj: News, feedback_window=None):
         """
-            Computes the users' engagement level for a given news by creating a dictionary to be returned to the server
-            that will accomplish the task to adjust the embeddings w.r.t. the gathered feedback.
-            This method performs the following actions:
-            - call the start_listening() method to listen to the vocal speeches from passengers on board
-            - call the estimate_sentiment(merged_speech_paths) to extract the sentiment linked to a passenger speech
-            - creates the resulting dictionary of the whole feedbacks to be returned to the server
-            - call send_to_server(feedbacks_dict) to send the dictionary to the server
+        Computes the users' engagement level for a given news by creating a dictionary to be returned to the server
+        that will accomplish the task to adjust the embeddings w.r.t. the gathered feedback.
+        This method performs the following actions:
+        - call the start_listening() method to listen to the vocal speeches from passengers on board
+        - call the estimate_sentiment(merged_speech_paths) to extract the sentiment linked to a passenger speech
+        - creates the resulting dictionary of the whole feedbacks to be returned to the server
+        - call send_to_server(feedbacks_dict) to send the dictionary to the server
 
-            current_news_obj: the object associated to the news to be evaluated through feedback gathering
+        current_news_obj: the object associated with the news to be evaluated through feedback gathering
         """
-        feedbacks_dict = {}
-        merged_speech_paths = self.start_listening()
+        feedbacks_dict = {"url-identifier": current_news_obj.get_news_link(), "users-feeback": []}
+        merged_speech_paths = self.start_listening(feedback_window)
 
         for audio_path in merged_speech_paths:
-            #1. first predict audio sentiment
+            # 1. first predict audio sentiment
             predicted_sentiment = self.audioSentimentClassifier.predict(audio_path)
 
-            #2. estimate user engagement based on sentiment, speech rate, and audio duration
+            # 2. estimate user engagement based on sentiment, speech rate, and audio duration
             engagement_score = self.audioSentimentClassifier.estimate_user_engagement(predicted_sentiment, audio_path)
 
-            #3. create feedback dictionary for the current user
+            # 3. create feedback dictionary for the current user
             username = self.get_username_from_audio_path(audio_path)
             user_feedback = {"username": username, "predicted_sentiment": predicted_sentiment, "engagement_score": engagement_score}
 
-            if current_news_obj.get_title() not in feedbacks_dict:
-                feedbacks_dict[current_news_obj.get_title()] = []
-
-            feedbacks_dict[current_news_obj.get_title()].append(user_feedback)
+            feedbacks_dict["users-feeback"].append(user_feedback)
 
         self.send_feedback_to_server(feedbacks_dict)
 
         return feedbacks_dict
+
     
     def get_username_from_audio_path(self, audio_path):
         """
@@ -87,10 +85,10 @@ class FeedbackEstimator(object):
             return feedback_dict
 
 
-    def start_listening(self):
+    def start_listening(self, feedback_window=None):
         """
-            Starts the recording of the passengers' voices invoking test() method of SpeakerRecognizerStreaming.
-            The method test() is blocking; it starts the recording and waits for the user to stop speaking.
+            Starts the recording of the passengers' voices invoking listen() method of SpeakerRecognizerStreaming.
+            The method listen() is blocking; it starts the recording and waits for the user to stop speaking.
             While listening, it saves slices of passengers' speeches (at least 4 seconds long)
             inside Client\\SpeakerRecognition\\resources\\audio_output
 
@@ -121,7 +119,7 @@ class FeedbackEstimator(object):
                     concatenated_audio.export(concatenated_path, format="wav")
                     merged_paths.append(concatenated_path)
 
-            print("Done merging audio slices.")
+            #print("Done merging audio slices.")
             return merged_paths
 
         print("Listening...")
@@ -132,6 +130,7 @@ class FeedbackEstimator(object):
                 output_audio_path=None,
                 input_profile_paths=test_input_profile_paths,
                 min_speech_duration=4,
+                feedback_window=feedback_window
             )
         except Exception as e:
             print("Something went wrong while listening: ", e)
@@ -148,11 +147,6 @@ class FeedbackEstimator(object):
 
     def send_feedback_to_server(self, feedbacks_dict):
         endpoint="http://localhost:5000/feedback"
-        print(feedbacks_dict)
-        # send feedback data to the server
-        # Example: requests.post(endpoint, json=feedback_data)
+        #print(feedbacks_dict)
+        print("Feedbacks sent back to the server.")
         pass
-    
-    def stop_listening(self):
-        print("Stop Listening.")
-        return

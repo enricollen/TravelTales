@@ -1,6 +1,7 @@
 import contextlib
 import os
 import struct
+import sys
 import time
 import wave
 from dotenv import load_dotenv
@@ -50,14 +51,16 @@ class SpeakerRecognizerStreaming:
 
         return frames[::channels]
 
-    def print_result(self, scores, labels):
+    def print_result(self, scores, labels, feedback_window):
         result = '\rscores -> '
         result += ', '.join('`%s`: %.2f' % (label, score) for label, score in zip(labels, scores))
-        print(result, end='', flush=True)
+        sys.stdout.write(result)
+        sys.stdout.flush()
+        feedback_window.update_single_line_output(len(result))
 
 
     def listen(self, audio_device_index, output_audio_path,
-             input_profile_paths, min_speech_duration=15):
+             input_profile_paths, min_speech_duration=15, feedback_window=None):
         """
             Starts the recording of the passengers voices using the Eagle API.
             While listening, it saves slices of passengers' speeches (at least 4 seconds long)
@@ -81,9 +84,10 @@ class SpeakerRecognizerStreaming:
         try:
             eagle = pveagle.create_recognizer(
                 access_key=self.access_key,
-                model_path=None, #using the default model
-                library_path=None, #using the default library
-                speaker_profiles=profiles)
+                model_path=None,
+                library_path=None,
+                speaker_profiles=profiles
+            )
 
             recorder = PvRecorder(device_index=audio_device_index, frame_length=eagle.frame_length)
             recorder.start()
@@ -95,9 +99,7 @@ class SpeakerRecognizerStreaming:
                     test_audio_file.setsampwidth(2)
                     test_audio_file.setframerate(eagle.sample_rate)
 
-                print('Listening for audio... (press Ctrl+C to stop)')
                 start_times = {label: None for label in speaker_labels}
-
                 silence_duration = 0.0
                 recording_active = {label: False for label in speaker_labels}
                 start_times = {label: None for label in speaker_labels}
@@ -112,17 +114,19 @@ class SpeakerRecognizerStreaming:
                                     test_audio_file.writeframes(struct.pack('%dh' % len(pcm), *pcm))
 
                         scores = eagle.process(pcm)
-                        self.print_result(scores, speaker_labels)
+                        self.print_result(scores, speaker_labels, feedback_window)
 
                         no_speech_detected = all(confidence <= 0.0 for confidence in scores)
-
                         if no_speech_detected:
                             silence_duration += eagle.frame_length / eagle.sample_rate
                         else:
                             silence_duration = 0.0
 
                         if silence_duration > SILENCE_THRESHOLD:
-                            print(f'\nNo speech detected for {silence_duration:.2f} seconds. Stop Listening...')
+                            sys.stdout.write(f'\nNo speech detected for {silence_duration:.2f} seconds. Stop Listening...\n')
+                            sys.stdout.flush()
+                            if feedback_window:
+                                feedback_window.update_prints()
                             break
 
                         for label, confidence in zip(speaker_labels, scores):
@@ -130,17 +134,13 @@ class SpeakerRecognizerStreaming:
                                 if not recording_active[label]:
                                     recording_active[label] = True
                                     start_times[label] = time.time()
-                                    # start of speech, initialize audio buffer
                                     speech_buffer[label] = []
                                 else:
-                                    # append audio to buffer during speech
                                     speech_buffer[label].extend(pcm)
                             elif recording_active[label]:
-                                # check for end of speech
                                 end_time = time.time()
                                 duration = end_time - start_times[label]
                                 if duration > min_speech_duration:
-                                    # here I save the audio buffer associated with the speech
                                     output_folder = os.getenv("SPEECH_OUTPUT_FOLDER")
                                     if not os.path.exists(output_folder):
                                         os.makedirs(output_folder)
@@ -151,19 +151,27 @@ class SpeakerRecognizerStreaming:
                                         export_file.setframerate(eagle.sample_rate)
                                         export_file.writeframes(
                                             struct.pack('%dh' % len(speech_buffer[label]), *speech_buffer[label]))
-                                    print(f"\nSpeaker '{label}' talked with confidence > 0.0 for {duration:.2f} seconds\n"
-                                          f"Audio saved to: {export_path}\n")
+                                    sys.stdout.write(f"\nSpeaker '{label}' talked with confidence > 0.0 for {duration:.2f} seconds\n"
+                                                    f"Audio saved to: {export_path}\n")
+                                    sys.stdout.flush()
+                                    if feedback_window:
+                                        feedback_window.update_prints()
+
                                     speaker_counters[label] += 1
                                 recording_active[label] = False
-
                 except KeyboardInterrupt:
-                    print('\nStopping...')
+                    sys.stdout.write('\nStopping...\n')
+                    sys.stdout.flush()
+                    if feedback_window:
+                        feedback_window.update_prints()
                 except pveagle.EagleActivationLimitError:
-                    print('\nAccessKey has reached its processing limit')
+                    sys.stdout.write('\nAccessKey has reached its processing limit\n')
+                    sys.stdout.flush()
+                    if feedback_window:
+                        feedback_window.update_prints()
                 finally:
                     recorder.stop()
                     recorder.delete()
-
         finally:
             if eagle is not None:
                 eagle.delete()
