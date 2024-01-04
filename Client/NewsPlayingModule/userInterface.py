@@ -127,7 +127,8 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
     def update_song_display():
         news_player_obj.add_news_to_played(
             current_news_obj)  # TODO: call this method only if the news is played for more than xx%
-        window['news_image'].update(current_news_obj.get_news_image_local_path())
+        #window['news_image'].update(current_news_obj.get_news_image_local_path())
+        window['news_image'].update(current_news_obj.get_news_category_image())
         window["news_summary"].update(
             textwrap.fill(current_news_obj.get_summary(), 40))
         window['song_name'].update(

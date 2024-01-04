@@ -29,7 +29,10 @@ class MusicUtilites:
         
 
     def play_sound(sound_path):
-        MusicUtilites.news_channel.play(mixer.Sound(sound_path))
+        try:
+            MusicUtilites.news_channel.play(mixer.Sound(sound_path))
+        except Exception as e:
+            print(e)
         MusicUtilites.news_playing = True
 
 

@@ -3,6 +3,7 @@ import requests
 from datetime import datetime
 from PIL import Image
 from io import BytesIO
+import numpy as np
 
 def crop_to_dimensions(img : Image, target_width, target_height):
     width, height = img.size
@@ -20,6 +21,7 @@ class News:
     This class exposes the getters method to fetch wav, png and txt files associated to a news
     """
 
+    CATEGORIES = ['business', 'entertainment', 'politics', 'sport', 'tech']
     COLORS = ["blue", "green", "yellow", "orange", "purple", "brown"]
     COLOR_INDEX = 0
 
@@ -89,6 +91,19 @@ class News:
         except Exception as e:
             print("An error occurred:", str(e))
             return None
+    
+    def get_news_category_image(self):
+        """
+        returns the local path to the image associated with this category
+        """
+        category_id = np.argmax(self.news_dict['Embedding'])
+        category = self.CATEGORIES[category_id]
+        IMG_DIR = "news-images/"
+        filename = category + ".png"
+
+        output_path = os.path.join(IMG_DIR, filename)
+        return output_path
+        
     
     def get_title(self):
         return self.news_dict["Title"]
