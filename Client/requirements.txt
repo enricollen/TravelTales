@@ -2,5 +2,12 @@ PySimpleGUI
 requests
 pygame
 librosa
-tensorflow
 pvrecorder
+pveagle
+pydub
+tflite
+tflite-runtime
+python-dotenv
+llvm-lite
+pillow
+matplotlib
