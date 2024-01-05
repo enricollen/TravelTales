@@ -11,3 +11,4 @@ python-dotenv
 llvm-lite
 pillow
 matplotlib
+beautifulsoup4
