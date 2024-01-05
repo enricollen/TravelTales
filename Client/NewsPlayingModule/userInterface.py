@@ -137,7 +137,7 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
             f'Playing: {textwrap.shorten(current_news_obj.get_title(), 100)}')
 
     feedback_mode = False
-    #MusicUtilites.start_music(MUSIC_FOLDER) #uncomment to play ambient music on startup
+    MusicUtilites.start_music(MUSIC_FOLDER) #uncomment to play ambient music on startup
 
     while True:
         event, values = window.read()
