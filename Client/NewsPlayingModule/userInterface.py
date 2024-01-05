@@ -1,3 +1,4 @@
+import os
 import threading
 import PySimpleGUI as sg
 import textwrap
@@ -38,7 +39,7 @@ TODO: add elevator music in the background eventually
 def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, feedback_estimator: FeedbackEstimator):
     current_news_obj = news_player_obj.get_current_news()
 
-    DEFAULT_IMAGE_PATH = 'NewsPlayingModule\\Images\\travel-tales.png'  # news_player_obj.get_news_image_path()
+    DEFAULT_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "travel-tales.png")  
 
     sg.theme('Reddit')
     song_title_column = [
@@ -56,10 +57,10 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                  font=('Tahoma', 10), key='currently_playing')]
     ]
 
-    GO_BACK_IMAGE_PATH = 'NewsPlayingModule\\Images\\back.png'
-    GO_FORWARD_IMAGE_PATH = 'NewsPlayingModule\\Images\\next.png'
-    PLAY_SONG_IMAGE_PATH = 'NewsPlayingModule\\Images\\play_button.png'
-    PAUSE_SONG_IMAGE_PATH = 'NewsPlayingModule\\Images\\pause.png'
+    GO_BACK_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "back.png")  
+    GO_FORWARD_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "next.png")  
+    PLAY_SONG_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "play_button.png")  
+    PAUSE_SONG_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "pause.png")  
 
     main = [
 
