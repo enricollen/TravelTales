@@ -167,25 +167,7 @@ def register():
         print('Eagle version: %s' % eagle_profiler.version)
 
         try:
-            enroll_percentage = 0.0
-
-            audio = read_file(user_audio_wav_path, eagle_profiler.sample_rate)
-            enroll_percentage, feedback = eagle_profiler.enroll(audio)
-            print('Enrolled audio file %s [Enrollment percentage: %.2f%% - Enrollment feedback: %s]'
-                    % (user_audio_wav_path, enroll_percentage, FEEDBACK_TO_DESCRIPTIVE_MSG[feedback]))
-
-            if enroll_percentage < 100.0:
-                print('Failed to create speaker profile. Insufficient enrollment percentage: %.2f%%. '
-                      'Please add more audio speech for enrollment.' % enroll_percentage)
-                return jsonify({'success': False, 'error': 'Audio not sufficient, please speak more to enroll'})
-
-            # export the speaker profile
-            speaker_profile = eagle_profiler.export()
-            if SPEAKER_PROFILE_OUTPUT_PATH is not None:
-                with open(os.path.join(SPEAKER_PROFILE_OUTPUT_PATH, username+'.pv'), 'wb') as f:
-                    f.write(speaker_profile.to_bytes())
-                print('Speaker profile is saved to %s' % SPEAKER_PROFILE_OUTPUT_PATH)
-
+            
             # check if csv already exists
             if os.path.exists(USERS_TSV_PATH):
                 df = pd.read_csv(USERS_TSV_PATH, sep='\t')
@@ -198,6 +180,26 @@ def register():
                 df = pd.DataFrame({'username': [username], 'interests': [embeddings]})
 
             df.to_csv(USERS_TSV_PATH, index=False, sep='\t')
+
+            # start voice enrolling phase 
+            enroll_percentage = 0.0
+
+            audio = read_file(user_audio_wav_path, eagle_profiler.sample_rate)
+            enroll_percentage, feedback = eagle_profiler.enroll(audio)
+            print('Enrolled audio file %s [Enrollment percentage: %.2f%% - Enrollment feedback: %s]'
+                    % (user_audio_wav_path, enroll_percentage, FEEDBACK_TO_DESCRIPTIVE_MSG[feedback]))
+
+            if enroll_percentage < 100.0:
+                print('Failed to create speaker profile. Insufficient enrollment percentage: %.2f%%. '
+                      'Please add more audio speech for enrollment.' % enroll_percentage)
+                return jsonify({'success': False, 'error': 'Audio not sufficient, please speak more to enroll'})
+            
+            # export the speaker profile
+            speaker_profile = eagle_profiler.export()
+            if SPEAKER_PROFILE_OUTPUT_PATH is not None:
+                with open(os.path.join(SPEAKER_PROFILE_OUTPUT_PATH, username+'.pv'), 'wb') as f:
+                    f.write(speaker_profile.to_bytes())
+                print('Speaker profile is saved to %s' % SPEAKER_PROFILE_OUTPUT_PATH)
 
             return jsonify({'success': True, 'message': 'Registered Successfully!'})
 
