@@ -8,11 +8,16 @@ from dotenv import load_dotenv
 from pvrecorder import PvRecorder
 import pveagle
 
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
+
 
 PV_RECORDER_FRAME_LENGTH = int(os.getenv("PV_RECORDER_FRAME_LENGTH"))
 SILENCE_THRESHOLD = int(os.getenv("SILENCE_THRESHOLD"))
 MIN_SPEECH_DURATION = int(os.getenv("MIN_SPEECH_DURATION"))
+SPEECH_OUTPUT_FOLDER = os.getenv("SPEECH_OUTPUT_FOLDER")
+API_KEY = os.getenv("API_KEY")
+
 FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.AUDIO_OK: 'Good audio',
     pveagle.EagleProfilerEnrollFeedback.AUDIO_TOO_SHORT: 'Insufficient audio length',
@@ -24,7 +29,7 @@ FEEDBACK_TO_DESCRIPTIVE_MSG = {
 
 class SpeakerRecognizerStreaming:
     def __init__(self):
-        self.access_key = os.getenv("API_KEY")
+        self.access_key = API_KEY
 
     def read_file(self, file_name, sample_rate):
         """
@@ -141,7 +146,7 @@ class SpeakerRecognizerStreaming:
                                 end_time = time.time()
                                 duration = end_time - start_times[label]
                                 if duration > min_speech_duration:
-                                    output_folder = os.getenv("SPEECH_OUTPUT_FOLDER")
+                                    output_folder = SPEECH_OUTPUT_FOLDER
                                     if not os.path.exists(output_folder):
                                         os.makedirs(output_folder)
                                     export_path = f"{output_folder}/{label}_speech_{speaker_counters[label]}.wav"

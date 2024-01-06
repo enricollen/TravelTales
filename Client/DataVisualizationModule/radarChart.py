@@ -1,12 +1,17 @@
+import os
+from dotenv import load_dotenv
 import numpy as np
-from matplotlib import pyplot as plt
-
 from matplotlib.figure import Figure
 
-target_names = ['business','entertainment','politics','sport','tech']
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
+
+#target_names = ['business','entertainment','politics','sport','tech']
+CATEGORIES=os.getenv('CATEGORIES')
+CATEGORIES=CATEGORIES.split(',')
 
 
-def radar_chart(values_array, colors, title='Radar Chart', categories=target_names, figsize=(3.5, 3.5), dpi=95):
+def radar_chart(values_array, colors, title='Radar Chart', categories=CATEGORIES, figsize=(3.5, 3.5), dpi=95):
     # Number of categories
     num_categories = len(categories)
 

@@ -5,9 +5,11 @@ from AudioSentimentClassificationModule.AudioSentimentClassifier import AudioSen
 from SpeakerRecognitionModule.SpeakerRecognizerStreaming import SpeakerRecognizerStreaming
 from NewsPlayingModule.news import News
 
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
 
 RECORDED_SPEECH_PATH = os.getenv("RECORDED_SPEECH_PATH")
+AUDIO_INPUT_DEVICE_INDEX = int(os.getenv("AUDIO_INPUT_DEVICE_INDEX"))
 
 class FeedbackEstimator(object):
 
@@ -51,13 +53,33 @@ class FeedbackEstimator(object):
 
             # 3. create feedback dictionary for the current user
             username = self.get_username_from_audio_path(audio_path)
-            user_feedback = {"username": username, "predicted_sentiment": predicted_sentiment, "engagement_score": engagement_score}
+            
+            # 4. get audio duration
+            audio_duration = self.get_audio_duration(audio_path)
+
+            # 5. create feedback dictionary for the current user
+            user_feedback = {
+                "username": username,
+                "predicted_sentiment": predicted_sentiment,
+                "engagement_score": engagement_score,
+                "audio_duration": audio_duration
+            }
 
             feedbacks_dict["users-feeback"].append(user_feedback)
 
         self.send_feedback_to_server(feedbacks_dict)
 
         return feedbacks_dict
+    
+    def get_audio_duration(self, audio_path):
+        """
+        Get the duration of the audio file in seconds.
+
+        audio_path: path to the audio file
+        """
+        audio = AudioSegment.from_wav(audio_path)
+        duration_in_seconds = len(audio) / 1000.0  # ms to s
+        return duration_in_seconds
 
     
     def get_username_from_audio_path(self, audio_path):
@@ -68,26 +90,6 @@ class FeedbackEstimator(object):
         file_name = os.path.basename(audio_path)
         username = file_name.split("_")[0]
         return username
-
-    def estimate_user_engagement(self, audio_paths):
-        """
-        Method to estimate the user engagement within the audio files.
-        The engagement score is estimated from the sentiment, speech rate, and audio duration.
-        audio_paths: paths to the merged audio files for each passenger
-        """    
-        
-        for audio_path in audio_paths:
-            #1. first predict audio sentiment
-            predicted_sentiment = self.audioSentimentClassifier.predict(audio_path)
-
-            #2. estimate user engagement based on sentiment, speech rate, and audio duration
-            engagement_score = self.audioSentimentClassifier.estimate_user_engagement(predicted_sentiment, audio_path)
-
-            #3. create feedback dictionary for the current user
-            username = self.get_username_from_audio_path(audio_path)
-            feedback_dict = {"username": username, "sentiment_score": predicted_sentiment, "engagement_score": engagement_score}
-
-            return feedback_dict
 
 
     def start_listening(self, feedback_window=None):
@@ -131,7 +133,7 @@ class FeedbackEstimator(object):
         try:
             test_input_profile_paths = [f"{username}.pv" for username in self.passengers_onboard]
             self.speakerRecognizer.listen(
-                audio_device_index=0,
+                audio_device_index=AUDIO_INPUT_DEVICE_INDEX,
                 output_audio_path=None,
                 input_profile_paths=test_input_profile_paths,
                 min_speech_duration=4,
@@ -151,7 +153,6 @@ class FeedbackEstimator(object):
         return merged_paths
 
     def send_feedback_to_server(self, feedbacks_dict):
-        endpoint="http://localhost:5000/feedback"
         #print(feedbacks_dict)
         print("Feedbacks sent back to the server.")
         pass
