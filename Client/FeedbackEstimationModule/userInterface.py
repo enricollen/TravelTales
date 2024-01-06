@@ -21,9 +21,13 @@ class FeedbackWindow:
             [sg.Text('', key=f'username_{i}', text_color='white', background_color='black') for i in range(3)]
         ]
 
+        table_column = [
+            [sg.Table(values=[], expand_x=True, headings=['Username', 'Duration', 'Sentiment', 'Engagement'], justification='center', key='user_table')],
+        ]
+
         layout = [
             [sg.Column(output_column, background_color='black')],
-            [sg.Column(image_column, background_color='black')],
+            [sg.Column(table_column, background_color='black'), sg.Column(image_column, background_color='black')]
         ]
 
         self.window = sg.Window('Feedback Collection', layout, size=(700, 500), background_color='black', finalize=True)
@@ -45,9 +49,8 @@ class FeedbackWindow:
     def close(self):
         self.window.close()
 
-    def display_user_images(self, feedback_data):
-        
-        for i in range(3):  
+    def display_user_data(self, feedback_data):
+        for i in range(3):
             self.window[f'image_{i}'].Update(filename='')
             self.window[f'username_{i}'].Update(value='')
 
@@ -58,9 +61,12 @@ class FeedbackWindow:
         neutral_face = os.path.join(os.path.dirname(__file__), "Images", "neutral.png")
         sad_face = os.path.join(os.path.dirname(__file__), "Images", "sad.png")
 
+        data = []
         for i, user in enumerate(user_feedback):
             username = user.get('username', '')
             engagement_score = user.get('engagement_score', 0)
+            predicted_sentiment = user.get('predicted_sentiment', 'neutral')
+            audio_duration = user.get('audio_duration', 0)
 
             if 5 < engagement_score:
                 image_filename = smiley_face
@@ -72,3 +78,8 @@ class FeedbackWindow:
             # update the image and username on the GUI
             self.window[f'image_{i}'].Update(filename=image_filename)
             self.window[f'username_{i}'].Update(value=username)
+
+            # update data inside the table
+            data.append([username, audio_duration, predicted_sentiment, engagement_score])
+
+        self.window['user_table'].update(values=data)

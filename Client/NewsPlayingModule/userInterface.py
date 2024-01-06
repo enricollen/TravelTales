@@ -192,7 +192,7 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 feedback_window = FeedbackWindow()
 
                 def callback(feedback_dict):
-                    feedback_window.display_user_images(feedback_dict)
+                    feedback_window.display_user_data(feedback_dict)
 
                 compute_feedback_thread = threading.Thread(
                     target=compute_feedback_threaded, args=(feedback_window,callback))
