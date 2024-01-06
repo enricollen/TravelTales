@@ -5,9 +5,11 @@ from AudioSentimentClassificationModule.AudioSentimentClassifier import AudioSen
 from SpeakerRecognitionModule.SpeakerRecognizerStreaming import SpeakerRecognizerStreaming
 from NewsPlayingModule.news import News
 
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
 
 RECORDED_SPEECH_PATH = os.getenv("RECORDED_SPEECH_PATH")
+AUDIO_INPUT_DEVICE_INDEX = int(os.getenv("AUDIO_INPUT_DEVICE_INDEX"))
 
 class FeedbackEstimator(object):
 
@@ -131,7 +133,7 @@ class FeedbackEstimator(object):
         try:
             test_input_profile_paths = [f"{username}.pv" for username in self.passengers_onboard]
             self.speakerRecognizer.listen(
-                audio_device_index=0,
+                audio_device_index=AUDIO_INPUT_DEVICE_INDEX,
                 output_audio_path=None,
                 input_profile_paths=test_input_profile_paths,
                 min_speech_duration=4,

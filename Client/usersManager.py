@@ -1,11 +1,13 @@
+from dotenv import load_dotenv
 import requests
 import os
 from datetime import datetime
-
 from user import User
 
-SERVER_BASE_URL = "http://localhost:5000"
-VOCAL_PROFILES_OUTPUT_DIR ="speaker_profiles"
+load_dotenv()
+
+VOCAL_PROFILES_OUTPUT_DIR = os.getenv("VOCAL_PROFILES_OUTPUT_DIR")
+SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
 
 class UsersManager:
 

@@ -4,7 +4,8 @@ import numpy as np
 import tensorflow as tf
 from dotenv import load_dotenv
 
-load_dotenv()
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
 
 MODEL_PATH = os.getenv("TFLITE_MODEL_PATH")
 

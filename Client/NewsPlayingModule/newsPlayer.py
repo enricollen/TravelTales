@@ -1,8 +1,12 @@
+import os
+from dotenv import load_dotenv
 from NewsPlayingModule.news import News
-
 import requests
 
-SERVER_BASE_URL = "http://localhost:5000"
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
+
+SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
 
 class NewsPlayer:
     def __init__(self, passengers_list : list, already_played_news : list = []) -> None:
