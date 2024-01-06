@@ -61,6 +61,8 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
     GO_FORWARD_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "next.png")  
     PLAY_SONG_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "play_button.png")  
     PAUSE_SONG_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "pause.png")  
+    DISABLED_MUSIC_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "disable_ambient_music.png")
+    ENABLED_MUSIC_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "enable_ambient_music.png")
 
     main = [
 
@@ -98,7 +100,11 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 sg.Image(filename=PAUSE_SONG_IMAGE_PATH,
                          size=(58, 58), pad=(10, 0), enable_events=True, key='pause', background_color='black'),
                 sg.Image(filename=GO_FORWARD_IMAGE_PATH, enable_events=True,
-                         size=(35, 44), pad=(10, 0), key='next', background_color='black')
+                         size=(35, 44), pad=(10, 0), key='next', background_color='black'),
+                sg.Image(filename=DISABLED_MUSIC_IMAGE_PATH, enable_events=True,
+                         size=(35, 44), pad=(10, 0), key='disabled-music', background_color='black', visible=True),
+                sg.Image(filename=ENABLED_MUSIC_IMAGE_PATH, enable_events=True,
+                         size=(35, 44), pad=(10, 0), key='enabled-music', background_color='black', visible=False)
             ]], expand_x=True, element_justification="center", background_color="black")
         ],
         [sg.Column(layout=currently_playing, justification='c',
@@ -146,18 +152,20 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
             MusicUtilites.stop_sounds()
             break
         elif event == 'play':
-            if MusicUtilites.is_sound_playing():
+            if MusicUtilites.is_news_playing():
                 pass
-            if MusicUtilites.is_sound_playing() == False:
-                MusicUtilites.play_sound(current_news_obj.get_wav_local_path())
+            if MusicUtilites.is_news_playing() == False:
+                MusicUtilites.play_news(current_news_obj.get_wav_local_path())
                 update_song_display()
+            if MusicUtilites.is_music_playing():
+                MusicUtilites.pause_music()
 
         elif event == 'pause':
-            if MusicUtilites.is_sound_playing() or MusicUtilites.is_music_playing():
-                MusicUtilites.pause_sounds()
-            else:
-                MusicUtilites.unpause()
-            pass
+            if MusicUtilites.is_news_playing():
+                MusicUtilites.pause_news()
+                MusicUtilites.unpause_music()
+                window['disabled-music'].update(visible = True)
+                window['enabled-music'].update(visible = False)
 
         elif event == 'next':
             next_news = news_player_obj.get_next_news(
@@ -167,7 +175,7 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 pass
             current_news_obj = next_news
             update_song_display()
-            MusicUtilites.play_sound(current_news_obj.get_wav_local_path())
+            MusicUtilites.play_news(current_news_obj.get_wav_local_path())
 
         elif event == 'previous':
             prev_news = news_player_obj.get_previous_news()
@@ -178,13 +186,26 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 pass
             current_news_obj = prev_news
             update_song_display()
-            MusicUtilites.play_sound(current_news_obj.get_wav_local_path())
+            MusicUtilites.play_news(current_news_obj.get_wav_local_path())
+        
+        elif event == 'disabled-music':
+            window['disabled-music'].update(visible = False)
+            window['enabled-music'].update(visible = True)
+            MusicUtilites.pause_music()
+            
+        elif event == 'enabled-music':
+            window['enabled-music'].update(visible = False)
+            window['disabled-music'].update(visible = True)
+            MusicUtilites.unpause_music()
 
         elif event == 'btn_show_plots':
             data_visualization_window(
                 users_manager_obj.get_passengers_objs(), [current_news_obj])
 
         elif event == 'btn_feedback_gathering':
+            if MusicUtilites.music_playing == True:
+                MusicUtilites.pause_music()
+            
             feedback_mode = not feedback_mode
 
             if feedback_mode:

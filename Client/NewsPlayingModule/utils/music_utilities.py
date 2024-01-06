@@ -28,24 +28,54 @@ class MusicUtilites:
         MusicUtilites.music_playing = True
         
 
-    def play_sound(sound_path):
+    def play_news(sound_path):
         try:
             MusicUtilites.news_channel.play(mixer.Sound(sound_path))
         except Exception as e:
             print(e)
         MusicUtilites.news_playing = True
-
-
-    def stop_sounds():
+        
+    def pause_news():
         """
-        stops both music and news reproduction
+        pauses news
         """
-        #print(f"[!] news stop method call [!]")
+        MusicUtilites.news_channel.pause()
+        MusicUtilites.news_playing = False
+        
+    def unpause_news():
+        """
+        unpauses news
+        """
+        MusicUtilites.news_channel.unpause()
+        MusicUtilites.news_playing = True
+        
+    def stop_news():
+        """
+        stops news
+        """
         MusicUtilites.news_channel.stop()
         MusicUtilites.news_playing = False
+
+    def pause_music():
+        """
+        pauses ambient music
+        """
+        MusicUtilites.music_channel.pause()
+        MusicUtilites.music_playing = False
+        
+    def unpause_music():
+        """
+        unpauses music
+        """
+        MusicUtilites.music_channel.unpause()
+        MusicUtilites.music_playing = True
+        
+    def stop_music():
+        """
+        stops music
+        """
         MusicUtilites.music_channel.stop()
         MusicUtilites.music_playing = False
-
 
     def pause_sounds():
         """
@@ -58,7 +88,7 @@ class MusicUtilites:
         MusicUtilites.music_playing = False
 
 
-    def unpause():
+    def unpause_sounds():
         """
         unpauses both music and news reproduction
         """
@@ -67,9 +97,19 @@ class MusicUtilites:
         MusicUtilites.news_playing = True
         MusicUtilites.music_channel.unpause()
         MusicUtilites.music_playing = True
+        
+    def stop_sounds():
+        """
+        stops both music and news reproduction
+        """
+        #print(f"[!] news stop method call [!]")
+        MusicUtilites.news_channel.stop()
+        MusicUtilites.news_playing = False
+        MusicUtilites.music_channel.stop()
+        MusicUtilites.music_playing = False
 
 
-    def is_sound_playing():
+    def is_news_playing():
         if MusicUtilites.news_channel.get_busy() == True:
             return MusicUtilites.news_playing
         return False
