@@ -16,8 +16,6 @@ def crop_to_dimensions(img : Image, target_width, target_height):
     cropped_img = img.crop((left, top, right, bottom))
     return cropped_img
 
-#SERVER_BASE_URL = "http://localhost:5000"
-
 class News:
     """
     This class exposes the getters method to fetch wav, png and txt files associated to a news

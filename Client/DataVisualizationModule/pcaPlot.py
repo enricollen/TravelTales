@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import MinMaxScaler
 
 def pca_plot(embeddings_array, colors, n_components=2, title='PCA Plot', figsize=(3.5, 3.5), dpi=95):
     # Assuming you have a numpy array 'embeddings' with shape (num_articles, 5)
