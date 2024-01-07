@@ -92,7 +92,6 @@ class News:
         returns the local path to the image associated with this news
         the image is in png format and is cropped to the specified width and height
         """
-        IMG_DIR = "news-images/"
 
         remote_url = self.get_news_image_link()
 
@@ -103,7 +102,7 @@ class News:
 
         filename = filename.split("?")[0]
 
-        output_path = os.path.join(IMG_DIR, filename)
+        output_path = os.path.join(os.path.dirname(__file__), "..", CATEGORY_STD_IMG_DIR, filename)
 
         if os.path.exists(output_path):
             print(f"Image already downloaded, returning local path for {filename}")

@@ -28,11 +28,6 @@ it has to show in the window:
 - the image associated with the news
 
 When its window is closed, it has to stop news reproduction.
-
-TODO: decide if it has to handle also feedback gathering inside this window
-    I think it would be the best choice
-
-TODO: add elevator music in the background eventually
 """
 
 
@@ -163,9 +158,9 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
         elif event == 'pause':
             if MusicUtilites.is_news_playing():
                 MusicUtilites.pause_news()
-                MusicUtilites.unpause_music()
-                window['disabled-music'].update(visible = True)
-                window['enabled-music'].update(visible = False)
+                #MusicUtilites.unpause_music()
+                #window['disabled-music'].update(visible = True)
+                #window['enabled-music'].update(visible = False)
 
         elif event == 'next':
             next_news = news_player_obj.get_next_news(

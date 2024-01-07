@@ -67,7 +67,7 @@ class FeedbackEstimator(object):
 
             feedbacks_dict["users-feeback"].append(user_feedback)
 
-        self.send_feedback_to_server(feedbacks_dict)
+        #self.send_feedback_to_server(feedbacks_dict)
 
         return feedbacks_dict
     

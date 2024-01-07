@@ -204,7 +204,7 @@ def register():
             # export the speaker profile
             speaker_profile = eagle_profiler.export()
             if SPEAKER_PROFILE_OUTPUT_PATH is not None:
-                with open(os.path.join(SPEAKER_PROFILE_OUTPUT_PATH, username+'.pv'), 'wb') as f:
+                with open(os.path.join(os.path.dirname(__file__), SPEAKER_PROFILE_OUTPUT_PATH, username+'.pv'), 'wb') as f:
                     f.write(speaker_profile.to_bytes())
                 print('Speaker profile is saved to %s' % SPEAKER_PROFILE_OUTPUT_PATH)
 

@@ -5,10 +5,8 @@ librosa
 pvrecorder
 pveagle
 pydub
-tflite
-tflite-runtime
+tensorflow
 python-dotenv
-llvm-lite
 pillow
 matplotlib
 beautifulsoup4
