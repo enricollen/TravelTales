@@ -2,6 +2,7 @@ import os
 import librosa
 import numpy as np
 import tensorflow as tf
+from pydub import AudioSegment
 from dotenv import load_dotenv
 
 env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
@@ -63,34 +64,36 @@ class AudioSentimentClassifier:
       speech_rate = non_silent_frames / total_frames
 
       # 2. audio duration
-      audio_duration = total_frames / sampling_rate
+      audio = AudioSegment.from_wav(audio_file)
+      audio_duration = len(audio) / 1000.0 
 
       # 3. mapping sentiment to engagement score
       sentiment_engagement_mapping = {
           'neutral': 2,
-          'calm': 5,
+          'disgust': 2,
+          'calm': 3,
+          'angry': 5,
+          'fearful': 5,
+          'sad': 8,        
           'happy': 9,
-          'sad': 8,
-          'angry': 4,
-          'fearful': 3,
-          'disgust': 5,
-          'surprised': 9
+          'surprised': 10
       }
 
       engagement_score = sentiment_engagement_mapping.get(sentiment, 5)
 
-      # now adjust engagement score based on speech rate and audio duration
-      if speech_rate > 0.5:
-          engagement_score += 1
-      else:
-          engagement_score -= 1
-
       # adjust based on audio duration
-      if audio_duration < 10:
-          engagement_score -= 1
-      elif audio_duration > 30:
-          engagement_score += 1
-
+      if audio_duration < 5:
+            engagement_score -= 1
+      elif audio_duration >= 10 and audio_duration < 15:
+            engagement_score += 1
+      elif audio_duration >= 15 and audio_duration < 20:
+            engagement_score += 2
+      elif audio_duration >= 20:
+            engagement_score += 3
+      
+      # now adjust engagement score based on speech rate and audio duration
+      engagement_score*=(speech_rate*10)
+      engagement_score = round(engagement_score,2)
       engagement_score = max(1, min(10, engagement_score))
 
       return engagement_score
@@ -104,13 +107,13 @@ class AudioSentimentClassifier:
         Method to convert the predictions (int) into readable strings.
         """
 
-        label_conversion = {'0': 'neutral',
+        label_conversion = {'0': 'disgust',
                             '1': 'calm',
                             '2': 'happy',
                             '3': 'sad',
                             '4': 'angry',
                             '5': 'fearful',
-                            '6': 'disgust',
+                            '6': 'neutral',
                             '7': 'surprised'}
 
         for key, value in label_conversion.items():
@@ -119,14 +122,13 @@ class AudioSentimentClassifier:
         return label
     
 
-"""
-if __name__ == '__main__':
+"""if __name__ == '__main__':
 
     audio_classifier = AudioSentimentClassifier()
     audio_classifier.load_model()
 
-    audio_file_path = 'Client/AudioSentimentClassification/audio/disgust.wav'
+    audio_file_path = "Client/SpeakerRecognitionModule/resources/audio_output/pluto_speech_1.wav"
+    
 
-    predicted_sentiment = audio_classifier.predict(audio_file_path)
-    print("Predicted Sentiment:", predicted_sentiment)
-"""
+    eng = audio_classifier.estimate_user_engagement(audio_classifier.predict(audio_file_path), audio_file_path)
+    print("eng:", eng)"""
