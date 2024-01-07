@@ -1,3 +1,4 @@
 pveagle==0.2.0
 pvrecorder==1.2.1
 pydub
+bs4
