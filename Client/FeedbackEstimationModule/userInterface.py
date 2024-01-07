@@ -57,9 +57,10 @@ class FeedbackWindow:
         # get user feedback data from dictionary
         user_feedback = feedback_data.get('users-feeback', [])
 
-        smiley_face = os.path.join(os.path.dirname(__file__), "Images", "happy.png")
-        neutral_face = os.path.join(os.path.dirname(__file__), "Images", "neutral.png")
-        sad_face = os.path.join(os.path.dirname(__file__), "Images", "sad.png")
+        high_interest = os.path.join(os.path.dirname(__file__), "Images", "high.png")
+        medium_interest = os.path.join(os.path.dirname(__file__), "Images", "medium.png")
+        low_interest = os.path.join(os.path.dirname(__file__), "Images", "low.png")
+        lowest_interest = os.path.join(os.path.dirname(__file__), "Images", "lowest.png")
 
         data = []
         for i, user in enumerate(user_feedback):
@@ -68,12 +69,14 @@ class FeedbackWindow:
             predicted_sentiment = user.get('predicted_sentiment', 'neutral')
             audio_duration = user.get('audio_duration', 0)
 
-            if 5 < engagement_score:
-                image_filename = smiley_face
-            elif 3 <= engagement_score <= 5:
-                image_filename = neutral_face
+            if 0 <= engagement_score < 2.5:
+                image_filename = lowest_interest
+            elif 2.5 <= engagement_score < 5:
+                image_filename = low_interest
+            elif 5 <= engagement_score < 7.5:
+                image_filename = medium_interest
             else:
-                image_filename = sad_face
+                image_filename = high_interest
 
             # update the image and username on the GUI
             self.window[f'image_{i}'].Update(filename=image_filename)
