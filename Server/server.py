@@ -26,6 +26,8 @@ USERS_TSV_PATH = os.path.join(SCRIPT_DIRECTORY, USERS_TSV_FILENAME)
 COLL_CSV_FILENAME=os.getenv("COLL_CSV_FILENAME")
 COLL_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, COLL_CSV_FILENAME)
 
+CATEGORIES = os.getenv("CATEGORIES").split(',')
+
 FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.AUDIO_OK: 'Good audio',
     pveagle.EagleProfilerEnrollFeedback.AUDIO_TOO_SHORT: 'Insufficient audio length',
@@ -136,14 +138,19 @@ def register():
     """
     try:
         username = request.form.get('username')
-
-        categories = ['business','entertainment','politics','sport','tech']
         
         embeddings = []
 
-        for category in categories:
-            #TODO: should throw an error if one of the categories field was not given
-            embeddings.append(float(request.form.get(category)))
+        for category in CATEGORIES:
+            value_from_form = request.form.get(category)
+
+            # Check if the value is not None before converting to float
+            if value_from_form is not None:
+                embeddings.append(float(value_from_form))
+            else:
+                # Handle the case where the value is None (e.g., provide a default value or raise an error)
+                return jsonify({'success': False, 'error': f'Missing value for category {category}'})
+
 
         embeddings = normalize_embedding(embeddings)
 

@@ -22,6 +22,7 @@
             margin-bottom: 20px;
             background-color: #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
         }
 
         h1 {
@@ -89,24 +90,9 @@
 
         
         <h3>Specify your interests:</h3>
-        <h6>[0: not interested, 0.5: slightly interested, 1: quite interested, 1.5: interested, 2: very interested]</h6>
+        <!--<h6>[0: not interested, 0.5: slightly interested, 1: quite interested, 1.5: interested, 2: very interested]</h6>-->
 </h4>
     <div id="sliders-container">
-        <!-- <div class="slider-container">
-
-            <label for="politics">Politics:</label>
-            <input type="range" id="politics" min="0" max="2" step="0.5" value="1">
-        </div>
-
-        <div class="slider-container">
-            <label for="photography">Photography:</label>
-            <input type="range" id="photography" min="0" max="2" step="0.5" value="1">
-        </div>
-
-        <div class="slider-container">
-            <label for="soccer">Soccer:</label>
-            <input type="range" id="soccer" min="0" max="2" step="0.5" value="1">
-        </div> -->
     </div>
 
         <button id="startRecording">Start Recording</button>
@@ -127,7 +113,7 @@
     </div>
 
     <script>
-        const categories = ['business','entertainment','politics','sport','tech'];
+        const categories = ['ArtsAndCulture', 'Business', 'Comedy', 'Crime', 'Education', 'Entertainment', 'Environment', 'Media', 'Politics', 'Religion', 'Science', 'Sports', 'Tech', 'Women'];
 
         const sliders_container = document.getElementById("sliders-container");
 
@@ -155,10 +141,6 @@
             categories.forEach(category => {
                 create_slider(category);
             });
-            //const politicsSlider = document.getElementById('politics');
-            //const photographySlider = document.getElementById('photography');
-            //const soccerSlider = document.getElementById('soccer');
-
             const successMessage = document.getElementById('successMessage');
             const returnToHomeButton = document.getElementById('returnToHome');
             
@@ -235,9 +217,6 @@
                     categories.forEach(category => {
                         formData.append(category, document.getElementById(category).value);
                     });
-                    //formData.append('politics', politicsSlider.value);
-                    //formData.append('photography', photographySlider.value);
-                    //formData.append('soccer', soccerSlider.value);
 
                     fetch('http://localhost:5000/register', {
                         method: 'POST',

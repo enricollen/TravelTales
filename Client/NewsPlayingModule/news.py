@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 import requests
 from datetime import datetime
 from PIL import Image
@@ -6,6 +7,13 @@ from io import BytesIO
 import numpy as np
 
 from bs4 import BeautifulSoup
+
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
+
+CATEGORY_STD_IMG_DIR = os.getenv("CATEGORY_STD_IMG_DIR")
+CATEGORIES = os.getenv("CATEGORIES").split(',')
+COLORS=os.getenv('COLORS').split(',')
 
 def crop_to_dimensions(img : Image, target_width, target_height):
     width, height = img.size
@@ -20,9 +28,8 @@ class News:
     """
     This class exposes the getters method to fetch wav, png and txt files associated to a news
     """
-
-    CATEGORIES = ['business', 'entertainment', 'politics', 'sport', 'tech']
-    COLORS = ["blue", "green", "yellow", "orange", "purple", "brown"]
+    CATEGORIES = CATEGORIES
+    COLORS = COLORS
     COLOR_INDEX = 0
 
     def __init__(self, news_dict : dict, wav_download_link : str) -> None:

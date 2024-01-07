@@ -10,10 +10,11 @@ load_dotenv(env_path)
 CATEGORIES=os.getenv('CATEGORIES')
 CATEGORIES=CATEGORIES.split(',')
 
-
 def radar_chart(values_array, colors, title='Radar Chart', categories=CATEGORIES, figsize=(3.5, 3.5), dpi=95):
     # Number of categories
     num_categories = len(categories)
+    #print("num_categories: "+ str(num_categories))
+    #print("values_array: "+ str(values_array))
 
     if colors is not None:
       assert len(values_array) == len(colors), "the given colors array len is != from len(values_array)"
@@ -26,7 +27,8 @@ def radar_chart(values_array, colors, title='Radar Chart', categories=CATEGORIES
     for i in range(len(values_array)):
       values_copy.append(values_array[i] + values_array[i][:1])
     angles += angles[:1]
-
+    
+    #print("values_copy: "+ str(values_copy))
     # Plot
     #https://github.com/PySimpleGUI/PySimpleGUI/issues/5410
     #fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(polar=True), dpi=dpi)
