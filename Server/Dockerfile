@@ -1,6 +1,6 @@
 FROM python:3.10.6
 
-WORKDIR /python-flask
+WORKDIR /Server
 ADD . .
 RUN pip install -r requirements.txt
 
