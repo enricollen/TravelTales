@@ -251,7 +251,7 @@ class FeedbackEstimator(object):
                 
                 elapsed_time_during_iteration = time.time() - iteration_begin_time
                 
-                time.sleep(min(1, images_frequency - elapsed_time_during_iteration))  # Adjust the delay as needed
+                time.sleep(max(0.5, images_frequency - elapsed_time_during_iteration))  # Adjust the delay as needed
             print("Video gathering thread is terminating...")
             cap.release()  # Release the camera
             print("Video gathering released the camera")
