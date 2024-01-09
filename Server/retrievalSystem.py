@@ -7,6 +7,10 @@ class RetrievalSystem:
         """
         returns the json list of the top k suggested news
         """
+
+        if users_embeddings is None or len(users_embeddings) == 0:
+            return collection.head(num_results).to_json(orient="records")
+
         return RetrievalSystem.__retrieve_mean(collection, users_embeddings, num_results)
 
     def __retrieve_mean(collection : pd.DataFrame, users_embeddings : list[list[float]], num_results = 10):

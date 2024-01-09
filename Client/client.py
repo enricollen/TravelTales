@@ -30,6 +30,7 @@ feedback_estimator = FeedbackEstimator(users_manager_obj.get_passengers_username
 WINDOW_WIDTH=700
 WINDOW_HEIGHT=500
 
+#sg.theme('Reddit')
 
 layout = [
 		[sg.Column([
