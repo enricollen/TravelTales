@@ -29,17 +29,21 @@ it has to show in the window:
 
 When its window is closed, it has to stop news reproduction.
 """
-
+first_news_shown = False
 
 def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, feedback_estimator: FeedbackEstimator):
     current_news_obj = news_player_obj.get_current_news()
 
+    global first_news_shown
+
     DEFAULT_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "travel-tales.png")  
 
+    DEFAULT_TITLE_TEXT = 'Press play to read news'
+
     sg.theme('Reddit')
-    song_title_column = [
-        [sg.Text(text='Press play to read news', justification='center', background_color='black',
-                 text_color='white', size=(200, 0), font='Tahoma', key='song_name')]
+    news_title_column = [
+        [sg.Text(text=DEFAULT_TITLE_TEXT, justification='center', background_color='black',
+                 text_color='white', size=(200, 0), font='Tahoma', key='txt_news_title', enable_events=True)]
     ]
 
     player_info = [
@@ -81,7 +85,7 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
             element_justification="center", background_color="black")  # ,expand_x=True, expand_y=True
         ],
 
-        [sg.Column(song_title_column, background_color='black',
+        [sg.Column(news_title_column, background_color='black',
                    justification='c', element_justification='c')],
 
         [
@@ -127,15 +131,17 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
     
         return feedback_dict
 
-    def update_song_display():
+    def update_news_infos_display():
+        global first_news_shown
+        first_news_shown = True
         news_player_obj.add_news_to_played(
             current_news_obj)  # TODO: call this method only if the news is played for more than xx%
         window['news_image'].update(current_news_obj.get_news_image_local_path(use_category_pic=False))
         #window['news_image'].update(current_news_obj.get_news_category_image())
         window["news_summary"].update(
             textwrap.fill(current_news_obj.get_summary(), 40))
-        window['song_name'].update(
-            textwrap.fill(current_news_obj.get_title(), 60))
+        window['txt_news_title'].update(
+            textwrap.fill(current_news_obj.get_title(), 60), font=('Tahoma', 14, 'underline'))
         window['currently_playing'].update(
             f'Playing: {textwrap.shorten(current_news_obj.get_title(), 100)}')
 
@@ -147,12 +153,18 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
         if event == sg.WIN_CLOSED:
             MusicUtilites.stop_sounds()
             break
+        elif event == 'txt_news_title':
+            if not first_news_shown:
+                continue
+            import webbrowser
+            webbrowser.open(current_news_obj.get_news_link())
+            pass
         elif event == 'play':
             if MusicUtilites.is_news_playing():
                 pass
             if MusicUtilites.is_news_playing() == False:
                 MusicUtilites.play_news(current_news_obj.get_wav_local_path())
-                update_song_display()
+                update_news_infos_display()
             if MusicUtilites.is_music_playing():
                 MusicUtilites.pause_music()
 
@@ -170,7 +182,7 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 print("! next news is the same as current!")
                 pass
             current_news_obj = next_news
-            update_song_display()
+            update_news_infos_display()
             MusicUtilites.play_news(current_news_obj.get_wav_local_path())
 
         elif event == 'previous':
@@ -181,7 +193,7 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 print("! prev news is the same as current!")
                 pass
             current_news_obj = prev_news
-            update_song_display()
+            update_news_infos_display()
             MusicUtilites.play_news(current_news_obj.get_wav_local_path())
         
         elif event == 'disabled-music':
