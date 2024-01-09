@@ -82,7 +82,11 @@ class FeedbackEstimator(object):
             if USE_VIDEO is True:
                 if username in visual_emotions_recognised.keys():
                     users_emotions = list(visual_emotions_recognised[username])
-                    user_feedback["visual_emotion"] = max(set(users_emotions), key=users_emotions.count)
+                    visual_emotion = max(set(users_emotions), key=users_emotions.count)
+                    user_feedback["visual_emotion"] = visual_emotion
+                    engagement_score_video = self.audioSentimentClassifier.estimate_user_engagement_video_only(visual_emotion, audio_path)
+                    user_feedback["engagement_score_video"] = engagement_score_video
+                    user_feedback["engagement_score_mixed"] = self.audioSentimentClassifier.estimate_user_engagement_ensemble(predicted_sentiment, visual_emotion, audio_path)
 
             feedbacks_dict["users-feeback"].append(user_feedback)
 

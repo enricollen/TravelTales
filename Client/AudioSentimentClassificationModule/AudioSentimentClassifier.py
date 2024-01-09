@@ -48,6 +48,27 @@ class AudioSentimentClassifier:
 
       return predicted_class
     
+    sentiment_engagement_mapping = {
+          'neutral': 2,
+          'disgust': 2,
+          'calm': 3,
+          'angry': 5,
+          'fearful': 5,
+          'sad': 8,        
+          'happy': 9,
+          'surprised': 10
+      }
+    
+    visual_sentiment_engagement_mapping = {
+        'neutral': 2,
+        'disgust': 2,
+        'calm': 3,
+        'angry': 5,
+        'fear': 5,
+        'sad': 8,        
+        'happy': 9,
+        'surprise': 10
+    }
 
     def estimate_user_engagement(self, sentiment, audio_file):
       """
@@ -68,18 +89,8 @@ class AudioSentimentClassifier:
       audio_duration = len(audio) / 1000.0 
 
       # 3. mapping sentiment to engagement score
-      sentiment_engagement_mapping = {
-          'neutral': 2,
-          'disgust': 2,
-          'calm': 3,
-          'angry': 5,
-          'fearful': 5,
-          'sad': 8,        
-          'happy': 9,
-          'surprised': 10
-      }
 
-      engagement_score = sentiment_engagement_mapping.get(sentiment, 5)
+      engagement_score = self.sentiment_engagement_mapping.get(sentiment, 5)
 
       # adjust based on audio duration
       if audio_duration < 5:
@@ -97,9 +108,84 @@ class AudioSentimentClassifier:
       engagement_score = max(1, min(10, engagement_score))
 
       return engagement_score
+    
+    def estimate_user_engagement_video_only(self, sentiment, audio_file):
+      """
+        Method to estimate the user engagement within the audio file. 
+        The engagement score is estimated from the speech rate, audio duration and the sentiment obtained from the video.
+        sentiment: the predicted sentiment of the image files
+        audio_file: path to the audio file to be classified
+      """
+      data, sampling_rate = librosa.load(audio_file)
 
+      # 1. speech rate as the ratio of non-silent frames over total frames
+      non_silent_frames = len(librosa.effects.split(data))
+      total_frames = len(data) / sampling_rate
+      speech_rate = non_silent_frames / total_frames
 
+      # 2. audio duration
+      audio = AudioSegment.from_wav(audio_file)
+      audio_duration = len(audio) / 1000.0 
 
+      engagement_score = self.visual_sentiment_engagement_mapping.get(sentiment, 5)
+
+      # adjust based on audio duration
+      if audio_duration < 5:
+            engagement_score -= 1
+      elif audio_duration >= 10 and audio_duration < 15:
+            engagement_score += 1
+      elif audio_duration >= 15 and audio_duration < 20:
+            engagement_score += 2
+      elif audio_duration >= 20:
+            engagement_score += 3
+      
+      # now adjust engagement score based on speech rate and audio duration
+      engagement_score*=(speech_rate*10)
+      engagement_score = round(engagement_score,2)
+      engagement_score = max(1, min(10, engagement_score))
+
+      return engagement_score
+    
+    def estimate_user_engagement_ensemble(self, sentiment_from_audio, sentiment_from_video, audio_file):
+      """
+        Method to estimate the user engagement within the audio file. 
+        The engagement score is estimated from the speech rate, audio duration, the sentiment obtained from the audio and the sentiment obtained from the video.
+        sentiment_from_audio: the predicted sentiment of the audio file
+        sentiment_from_video: the predicted sentiment of the image files
+        audio_file: path to the audio file to be classified
+      """
+      data, sampling_rate = librosa.load(audio_file)
+
+      # 1. speech rate as the ratio of non-silent frames over total frames
+      non_silent_frames = len(librosa.effects.split(data))
+      total_frames = len(data) / sampling_rate
+      speech_rate = non_silent_frames / total_frames
+
+      # 2. audio duration
+      audio = AudioSegment.from_wav(audio_file)
+      audio_duration = len(audio) / 1000.0 
+
+      engagement_score = self.visual_sentiment_engagement_mapping.get(sentiment_from_video, 5)
+      engagement_score += self.sentiment_engagement_mapping.get(sentiment_from_audio, 5)
+
+      engagement_score /= 2
+
+      # adjust based on audio duration
+      if audio_duration < 5:
+            engagement_score -= 1
+      elif audio_duration >= 10 and audio_duration < 15:
+            engagement_score += 1
+      elif audio_duration >= 15 and audio_duration < 20:
+            engagement_score += 2
+      elif audio_duration >= 20:
+            engagement_score += 3
+      
+      # now adjust engagement score based on speech rate and audio duration
+      engagement_score*=(speech_rate*10)
+      engagement_score = round(engagement_score,2)
+      engagement_score = max(1, min(10, engagement_score))
+
+      return engagement_score
 
     @staticmethod
     def convertclasstoemotion(pred):

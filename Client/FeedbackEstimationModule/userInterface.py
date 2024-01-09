@@ -30,7 +30,7 @@ class FeedbackWindow:
         ]
 
         table_column = [
-            [sg.Table(values=[], expand_x=True, headings=['Username', 'Duration', 'Audio Sentiment', 'Engagement'] + (['Video sentiment'] if USE_VIDEO else []), justification='center', key='user_table')],
+            [sg.Table(values=[], expand_x=True, headings=['Username', 'Duration', 'Audio Sentiment', 'Engagement'] + (['Video sentiment', 'Video engagement', 'Mixed engagement'] if USE_VIDEO else []), justification='center', key='user_table')],
         ]
 
         first_row = [sg.Column(output_column, background_color='black')]
@@ -50,7 +50,7 @@ class FeedbackWindow:
             [sg.Column(table_column, background_color='black'), sg.Column(image_column, background_color='black')]
         ]
 
-        self.window = sg.Window('Feedback Collection', layout, size=(WINDOW_WIDTH, WINDOW_HEIGHT), background_color='black', finalize=True)
+        self.window = sg.Window('Feedback Collection', layout, size=(WINDOW_WIDTH, WINDOW_HEIGHT), background_color='black', resizable=True, finalize=True)
 
     #def capture_prints(self):
     #    sys.stdout = self.print_output
@@ -116,6 +116,8 @@ class FeedbackWindow:
 
             if USE_VIDEO:
                 visual_emotion = user.get('visual_emotion', 'NA')
+                visual_engagement_score = user.get('engagement_score_video', -1)
+                mixed_engagement_score = user.get('engagement_score_mixed', -1)
 
             if 0 <= engagement_score < 2.5:
                 image_filename = lowest_interest
@@ -131,6 +133,6 @@ class FeedbackWindow:
             self.window[f'username_{i}'].Update(value=username)
 
             # update data inside the table
-            data.append([username, audio_duration, predicted_sentiment, engagement_score] + ([visual_emotion] if USE_VIDEO else []))
+            data.append([username, audio_duration, predicted_sentiment, engagement_score] + ([visual_emotion, visual_engagement_score, mixed_engagement_score] if USE_VIDEO else []))
 
         self.window['user_table'].update(values=data)
