@@ -231,8 +231,7 @@ class FeedbackEstimator(object):
                 iteration_begin_time = time.time()
                 ret, frame = cap.read()
                 if ret:
-
-                    buffered_image = convert_frame_to_bytes(frame)
+                    frame = frame.copy()
                     cv2.imwrite('temp_img.jpg', frame)  # Save each frame temporarily
                     results = DeepFace.analyze('temp_img.jpg', actions=['emotion'], enforce_detection=False)
                     #print(f"Received results from DeepFace.analyze method: ", results)
@@ -240,7 +239,13 @@ class FeedbackEstimator(object):
                         if username not in self.gathered_frames_infos.keys():
                             self.gathered_frames_infos[username] = []
                         self.gathered_frames_infos[username].append(result['dominant_emotion'])
+                        x, y, w, h = result['region'].values()
+                        frame = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw bounding box
+                        label = f"Emotion: {result['dominant_emotion']}"  # Create label text
+                        frame = cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)  # Display label
+                        frame = cv2.putText(frame, f'User: {username}', (x, y + h + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)  # Display label
                     # here we can add labels to the image that is in the variable frame
+                    buffered_image = convert_frame_to_bytes(frame)
                     feedback_window.show_image(buffered_image)
                     
                     #last_frame = frame.copy()
