@@ -30,7 +30,7 @@ class FeedbackWindow:
         ]
 
         table_column = [
-            [sg.Table(values=[], expand_x=True, headings=['Username', 'Duration', 'Audio Sentiment', 'Engagement'] + (['Video sentiment', 'Video engagement', 'Mixed engagement'] if USE_VIDEO else []), justification='center', key='user_table')],
+            [sg.Table(values=[], headings=['Username', 'Duration', 'Audio Sentiment', 'Engagement'] + (['Video sentiment', 'Video engagement', 'Mixed engagement'] if USE_VIDEO else []), justification='center', key='user_table', max_col_width=20, def_col_width = 10, col_widths=10, hide_vertical_scroll=True, vertical_scroll_only=False, auto_size_columns=False)],
         ]
 
         first_row = [sg.Column(output_column, background_color='black')]
