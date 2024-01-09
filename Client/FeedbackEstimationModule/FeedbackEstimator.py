@@ -182,7 +182,7 @@ class FeedbackEstimator(object):
     gathered_frames_infos = None
     # should be a dictionary where for each user (whose username is the key) stores the list of emotions recognized at each frame
 
-    def start_video_recording(self, timeout = 600, images_frequency = 2, feedback_window=None):
+    def start_video_recording(self, timeout = 600, images_frequency = float(os.getenv("IMAGE_ANALYSIS_FREQUENCY")), feedback_window=None):
         """
         this method should:
         1. launch a new thread dedicated to images gathering
@@ -245,18 +245,16 @@ class FeedbackEstimator(object):
                         frame = cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)  # Display label
                         frame = cv2.putText(frame, f'User: {username}', (x, y + h + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)  # Display label
                     # here we can add labels to the image that is in the variable frame
-                    buffered_image = convert_frame_to_bytes(frame)
-                    feedback_window.show_image(buffered_image)
-                    
-                    #last_frame = frame.copy()
-                    #new_frame_available = True
+                    if len(results) > 0:
+                        buffered_image = convert_frame_to_bytes(frame)
+                        feedback_window.show_image(buffered_image)
                 else:
                     print("ret, frame = cap.read() returned empty ret, calling the method again")
                     #continue
                 
                 elapsed_time_during_iteration = time.time() - iteration_begin_time
                 
-                time.sleep(max(0.5, images_frequency - elapsed_time_during_iteration))  # Adjust the delay as needed
+                time.sleep(max(0.2, images_frequency - elapsed_time_during_iteration))  # Adjust the delay as needed
             print("Video gathering thread is terminating...")
             cap.release()  # Release the camera
             print("Video gathering released the camera")
