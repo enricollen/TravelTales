@@ -15,6 +15,7 @@ USE_VIDEO = True if os.getenv("USE_VIDEO").lower() in ["true", "yes", "1"] else 
 
 if USE_VIDEO:
     from deepface import DeepFace
+    DEEPFACE_DATABASE_PATH = os.getenv("DEEPFACE_DATABASE_PATH")
 
 
 class FeedbackEstimator(object):
@@ -237,19 +238,39 @@ class FeedbackEstimator(object):
                 if ret:
                     frame = frame.copy()
                     cv2.imwrite('temp_img.jpg', frame)  # Save each frame temporarily
-                    results = DeepFace.analyze('temp_img.jpg', actions=['emotion'], enforce_detection=False)
-                    #print(f"Received results from DeepFace.analyze method: ", results)
-                    for username, result in zip(self.passengers_onboard, results):
+                    default_username = self.passengers_onboard[0]
+                    detected_faces = DeepFace.extract_faces('temp_img.jpg', enforce_detection=False)
+                    for result in detected_faces:
+                        ret = DeepFace.find(result['face'], DEEPFACE_DATABASE_PATH, enforce_detection=False)
+                        if len(ret) > 0 and len(ret[0]) > 0:
+                            try:
+                                default_username = recognised_username = (ret[0].iloc[0]['identity']).replace(DEEPFACE_DATABASE_PATH, "").split("/")[0].replace("\\", "").replace(".jpg", "")
+                                #print("deepface find username string: ", recognised_username)
+                            except Exception as e:
+                                print(e)
+                                print(ret)
+                                print("len(ret)", len(ret), "len(ret[0]): ", len(ret[0]))
+                            
+                        else:
+                            #print("Using as username the default value: ", default_username)
+                            recognised_username = default_username
+                        
+                        if recognised_username not in self.passengers_onboard:
+                            print(f"[!] The recognised user: {recognised_username} is not in the list of the current passengers [!]")
+                        username = recognised_username
+                        analyzed = DeepFace.analyze(result['face'], actions=['emotion'], enforce_detection=False)
+                        #print(f"Received results from DeepFace.analyze method: ", analyzed)
+                        analyzed = analyzed[0]
                         if username not in self.gathered_frames_infos.keys():
                             self.gathered_frames_infos[username] = []
-                        self.gathered_frames_infos[username].append(result['dominant_emotion'])
-                        x, y, w, h = result['region'].values()
+                        self.gathered_frames_infos[username].append(analyzed['dominant_emotion'])
+                        x, y, w, h = result['facial_area'].values()
                         frame = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw bounding box
-                        label = f"Emotion: {result['dominant_emotion']}"  # Create label text
+                        label = f"Emotion: {analyzed['dominant_emotion']}"  # Create label text
                         frame = cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)  # Display label
                         frame = cv2.putText(frame, f'User: {username}', (x, y + h + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)  # Display label
                     # here we can add labels to the image that is in the variable frame
-                    if len(results) > 0:
+                    if len(detected_faces) > 0:
                         buffered_image = convert_frame_to_bytes(frame)
                         feedback_window.show_image(buffered_image)
                 else:
