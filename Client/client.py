@@ -27,6 +27,10 @@ news_player_obj = NewsPlayer(users_manager_obj.get_passengers_usernames(), load_
 
 feedback_estimator = FeedbackEstimator(users_manager_obj.get_passengers_usernames())
 
+import os
+
+SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
+
 WINDOW_WIDTH=700
 WINDOW_HEIGHT=500
 
@@ -35,7 +39,7 @@ WINDOW_HEIGHT=500
 layout = [
 		[sg.Column([
 			[sg.Sizer(WINDOW_WIDTH,0)],
-			[sg.Column([[sg.Button("Set current passengers", key="btn_get_users", expand_x=True)]], expand_x=True), sg.Sizer(WINDOW_WIDTH/2, 0), sg.Button("Start", key="btn_read_news", expand_x=True)]
+			[sg.Column([[sg.Button("Set passengers", key="btn_get_users", expand_x=True)]], expand_x=True), sg.Sizer(WINDOW_WIDTH/5, 0), sg.Button("Register user", key="btn_register", expand_x=True), sg.Sizer(WINDOW_WIDTH/5, 0), sg.Button("Start session", key="btn_read_news", expand_x=True)]
 			],
 		element_justification="center")	#,expand_x=True, expand_y=True
 		],
@@ -73,6 +77,9 @@ while True:
 
 	if event == sg.WIN_CLOSED:
 		break
+	elif event == "btn_register":
+		import webbrowser
+		webbrowser.open(SERVER_BASE_URL)
 	elif event == "btn_get_users":#"Get Users List":
 		#global user_list_layout
 		user_list_layout = [
