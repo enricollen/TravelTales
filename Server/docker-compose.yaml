@@ -1,0 +1,14 @@
+# docker-compose.yaml
+version: '3'
+
+services:
+  web:
+    build: '.'
+    env_file: [.env]
+    restart: always
+    ports:
+      - '5000:5000'
+    # configurazione per fare il deploy su home assistant OS e utilizzare il certificato ssl generato da duckdns
+    # (vedi issue #8 su github dronesimulator-flask-api)
+    volumes:
+      - /mnt/data/supervisor/ssl:/host-ssl-dir:ro
