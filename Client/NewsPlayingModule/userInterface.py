@@ -111,18 +111,19 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
 
     feedback_window = None 
 
-    def compute_feedback_threaded(feedback_window, callback):
-        feedback_window.capture_prints()
+    def compute_feedback_thread(feedback_window):
+        #feedback_window.capture_prints()
     
         feedback_dict = feedback_estimator.compute_feedback(current_news_obj, feedback_window)
         
         #call the callback function to update the feedback window with feedback faces
         #w.r.t. the user engagement level contained inside the feedback_dict
-        callback(feedback_dict)
+        feedback_window.display_user_data(feedback_dict)
         
-        feedback_window.update_prints()
-        feedback_window.release_prints()
-        window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
+        #feedback_window.update_prints()
+        #feedback_window.release_prints()
+        if not window.is_closed():
+            window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
     
         return feedback_dict
 
@@ -207,15 +208,35 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 window['btn_feedback_gathering'].update(disabled=True, text='Collecting Feedback...')
                 feedback_window = FeedbackWindow()
 
-                def callback(feedback_dict):
-                    feedback_window.display_user_data(feedback_dict)
-
-                compute_feedback_thread = threading.Thread(
-                    target=compute_feedback_threaded, args=(feedback_window,callback))
-                compute_feedback_thread.start()
+                feedback_thread = threading.Thread(
+                    target=compute_feedback_thread, args=[feedback_window])
+                
+                feedback_thread.start()
             else:
-                if compute_feedback_thread and compute_feedback_thread.is_alive():
-                    compute_feedback_thread.join()
+                if feedback_window and type(feedback_window) == FeedbackWindow:
+                    feedback_window.close()
+                if feedback_thread and feedback_thread.is_alive():
+                    feedback_estimator.stop_gathering()
+                    feedback_thread.join(10)
+                    print(f"Feedback thread was terminated correctly? {'no' if feedback_thread.is_alive() else 'yes'}")
                 window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
+        
+        if feedback_window is not None and type(feedback_window) == FeedbackWindow:
+            event_feedback, values_feedback = feedback_window.window.read()
+
+            if event_feedback == sg.WIN_CLOSED:
+                feedback_window.close()
+                if feedback_thread and feedback_thread.is_alive():
+                    feedback_estimator.stop_gathering()
+                    feedback_thread.join(10)
+                    print(f"Feedback thread was terminated correctly? {'no' if feedback_thread.is_alive() else 'yes'}")
+                window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
+            
+            elif event_feedback == 'btn_stop_gathering':
+                feedback_window.disable_stop_button()
+                feedback_estimator.stop_gathering()
+                
+                pass
+                
 
     window.close()

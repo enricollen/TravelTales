@@ -10,3 +10,4 @@ python-dotenv
 pillow
 matplotlib
 beautifulsoup4
+deepface

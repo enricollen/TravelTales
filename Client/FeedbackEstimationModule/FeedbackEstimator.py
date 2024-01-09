@@ -11,6 +11,12 @@ load_dotenv(env_path)
 RECORDED_SPEECH_PATH = os.getenv("RECORDED_SPEECH_PATH")
 AUDIO_INPUT_DEVICE_INDEX = int(os.getenv("AUDIO_INPUT_DEVICE_INDEX"))
 
+USE_VIDEO = True if os.getenv("USE_VIDEO").lower() in ["true", "yes", "1"] else False
+
+if USE_VIDEO:
+    from deepface import DeepFace
+
+
 class FeedbackEstimator(object):
 
     passengers_onboard = None
@@ -42,7 +48,15 @@ class FeedbackEstimator(object):
         current_news_obj: the object associated with the news to be evaluated through feedback gathering
         """
         feedbacks_dict = {"url-identifier": current_news_obj.get_news_link(), "users-feeback": []}
+
+        if USE_VIDEO:
+            # a. starts the camera recording and redirect the camera frames to deepface model
+            self.start_video_recording(feedback_window=feedback_window)
+            
         merged_speech_paths = self.start_listening(feedback_window)
+
+        if USE_VIDEO:
+            visual_emotions_recognised = self.stop_video_recording()
 
         for audio_path in merged_speech_paths:
             # 1. first predict audio sentiment
@@ -65,10 +79,16 @@ class FeedbackEstimator(object):
                 "audio_duration": audio_duration
             }
 
+            if USE_VIDEO is True:
+                if username in visual_emotions_recognised.keys():
+                    users_emotions = list(visual_emotions_recognised[username])
+                    user_feedback["visual_emotion"] = max(set(users_emotions), key=users_emotions.count)
+
             feedbacks_dict["users-feeback"].append(user_feedback)
 
         #self.send_feedback_to_server(feedbacks_dict)
-
+        if USE_VIDEO:
+            print(f"returning feedback_dict which is: ", feedbacks_dict)
         return feedbacks_dict
     
     def get_audio_duration(self, audio_path):
@@ -130,6 +150,9 @@ class FeedbackEstimator(object):
             return merged_paths
 
         print("Listening...")
+        if feedback_window:
+            feedback_window.print("Listening...")
+
         try:
             test_input_profile_paths = [f"{username}.pv" for username in self.passengers_onboard]
             self.speakerRecognizer.listen(
@@ -141,6 +164,8 @@ class FeedbackEstimator(object):
             )
         except Exception as e:
             print("Something went wrong while listening: ", e)
+            if feedback_window:
+                feedback_window.print("Something went wrong while listening")
 
         #at this point, we have all the slices of all the passengers inside the audio_output folder,
         #and we can proceed to stitch them together (in case there are more than 1 .wav from the same person)
@@ -151,6 +176,105 @@ class FeedbackEstimator(object):
             return
 
         return merged_paths
+    
+    video_processing_thread = None
+    continue_video_recording = False
+    gathered_frames_infos = None
+    # should be a dictionary where for each user (whose username is the key) stores the list of emotions recognized at each frame
+
+    def start_video_recording(self, timeout = 600, images_frequency = 2, feedback_window=None):
+        """
+        this method should:
+        1. launch a new thread dedicated to images gathering
+        2. collect an image every 'images_frequency' seconds
+        3. get the results (and possibly the labelled image) from DeepFace applied to the given frame
+        4. show the gathered image (possibly with the labels) in the pySimpleGUI given window
+        """
+        import time, cv2, threading, base64
+
+        def convert_frame_to_bytes(frame, target_width=400, target_height=300):
+            # Convert the OpenCV frame to bytes
+            # Get the original image dimensions
+            height, width = frame.shape[:2]
+
+            # Calculate the aspect ratio of the original image
+            aspect_ratio = width / height
+
+            # Determine the target width and height while maintaining the aspect ratio
+            if target_width / aspect_ratio <= target_height:
+                resized_width = target_width
+                resized_height = int(resized_width / aspect_ratio)
+            else:
+                resized_height = target_height
+                resized_width = int(resized_height * aspect_ratio)
+
+            # Resize the image while maintaining the aspect ratio
+            resized_frame = cv2.resize(frame, (resized_width, resized_height), interpolation=cv2.INTER_AREA)
+            _, buffer = cv2.imencode('.png', resized_frame)
+            frame_bytes = base64.b64encode(buffer)
+            return frame_bytes
+
+        self.continue_video_recording = True
+        self.gathered_frames_infos = {}
+
+        if feedback_window is None:
+            print("[!] the method start_video_recording received a None type feedback_window [!]")
+        #else:
+        #    print(f"[+] feedback_window type: {type(feedback_window)}", feedback_window)
+
+        def capture_frames_thread(feedback_window):
+            #global last_frame, new_frame_available
+            
+            cap = cv2.VideoCapture(0)
+            
+            while self.continue_video_recording is True:
+                iteration_begin_time = time.time()
+                ret, frame = cap.read()
+                if ret:
+
+                    buffered_image = convert_frame_to_bytes(frame)
+                    cv2.imwrite('temp_img.jpg', frame)  # Save each frame temporarily
+                    results = DeepFace.analyze('temp_img.jpg', actions=['emotion'], enforce_detection=False)
+                    #print(f"Received results from DeepFace.analyze method: ", results)
+                    for username, result in zip(self.passengers_onboard, results):
+                        if username not in self.gathered_frames_infos.keys():
+                            self.gathered_frames_infos[username] = []
+                        self.gathered_frames_infos[username].append(result['dominant_emotion'])
+                    # here we can add labels to the image that is in the variable frame
+                    feedback_window.show_image(buffered_image)
+                    
+                    #last_frame = frame.copy()
+                    #new_frame_available = True
+                else:
+                    print("ret, frame = cap.read() returned empty ret, calling the method again")
+                    #continue
+                
+                elapsed_time_during_iteration = time.time() - iteration_begin_time
+                
+                time.sleep(min(1, images_frequency - elapsed_time_during_iteration))  # Adjust the delay as needed
+            print("Video gathering thread is terminating...")
+            cap.release()  # Release the camera
+            print("Video gathering released the camera")
+            exit()
+
+        self.video_processing_thread = threading.Thread(target=capture_frames_thread, args=[feedback_window], daemon=True)
+        self.video_processing_thread.start()
+        print("Started video processing thread")
+
+    def stop_video_recording(self):
+        print("Setting continue video recording to false")
+        self.continue_video_recording = False
+        import threading
+        if self.video_processing_thread is not None and isinstance(self.video_processing_thread, threading.Thread):
+            self.video_processing_thread.join(3)
+            print(f"video_processing_thread has terminated correctly? {'no' if self.video_processing_thread.is_alive() else 'yes'}")
+            self.video_processing_thread = None
+
+        return self.gathered_frames_infos
+    
+    def stop_gathering(self):
+        print("[+] FeedbackEstimator: received a call to method stop_gathering [+]")
+        self.speakerRecognizer.stop()
 
     def send_feedback_to_server(self, feedbacks_dict):
         #print(feedbacks_dict)

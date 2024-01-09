@@ -61,7 +61,9 @@ class SpeakerRecognizerStreaming:
         result += ', '.join('`%s`: %.2f' % (label, score) for label, score in zip(labels, scores))
         sys.stdout.write(result)
         sys.stdout.flush()
-        feedback_window.update_single_line_output(len(result))
+        if feedback_window:
+            feedback_window.print(result)
+        #feedback_window.update_single_line_output(len(result))
 
 
     def listen(self, audio_device_index, output_audio_path,
@@ -75,6 +77,7 @@ class SpeakerRecognizerStreaming:
             input_profile_paths: the paths to the speaker profiles to use
             min_speech_duration: the minimum duration of a speech to be considered valid
         """
+        self._stop = False
         profiles = list()
         speaker_labels = list()
 
@@ -131,7 +134,8 @@ class SpeakerRecognizerStreaming:
                             sys.stdout.write(f'\nNo speech detected for {silence_duration:.2f} seconds. Stop Listening...\n')
                             sys.stdout.flush()
                             if feedback_window:
-                                feedback_window.update_prints()
+                                feedback_window.print(f'\nNo speech detected for {silence_duration:.2f} seconds. Stop Listening...\n')
+                                #feedback_window.update_prints()
                             break
 
                         for label, confidence in zip(speaker_labels, scores):
@@ -160,26 +164,41 @@ class SpeakerRecognizerStreaming:
                                                     f"Audio saved to: {export_path}\n")
                                     sys.stdout.flush()
                                     if feedback_window:
-                                        feedback_window.update_prints()
+                                        feedback_window.print(f"\nSpeaker '{label}' talked with confidence > 0.0 for {duration:.2f} seconds\n"
+                                                    f"Audio saved to: {export_path}\n")
+                                        #feedback_window.update_prints()
 
                                     speaker_counters[label] += 1
                                 recording_active[label] = False
+                        
+                        if self.is_stopped():
+                            print("Stopping SpeakerRecognizer due to stop request received")
+                            break
+
                 except KeyboardInterrupt:
                     sys.stdout.write('\nStopping...\n')
                     sys.stdout.flush()
                     if feedback_window:
-                        feedback_window.update_prints()
+                        feedback_window.print('\nStopping...\n')
+                        #feedback_window.update_prints()
                 except pveagle.EagleActivationLimitError:
                     sys.stdout.write('\nAccessKey has reached its processing limit\n')
                     sys.stdout.flush()
                     if feedback_window:
-                        feedback_window.update_prints()
+                        feedback_window.print('\nAccessKey has reached its processing limit\n')
+                        #feedback_window.update_prints()
                 finally:
                     recorder.stop()
                     recorder.delete()
         finally:
             if eagle is not None:
                 eagle.delete()
+
+    def stop(self):
+        self._stop = True
+
+    def is_stopped(self):
+        return self._stop
 
     def show_audio_devices(self):
         for index, name in enumerate(PvRecorder.get_available_devices()):
