@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Form</title>
+</head>
+<body>
+    <h1>{{title}}</h1>
+    <p><a href="{{news_link}}">News link</a></p>
+    <form action="/feedback-submit" method="post">
+        {% for key, value in my_dict.items() %}
+            <input type="hidden" name="{{ key }}" value="{{ value }}">
+        {% endfor %}
+
+        <label for="select">Select the emotion that the news generated to you:</label>
+        <br>
+        <select id="explicit-emotion" name="explicit-emotion">
+        {% for emotion in emotions %}
+            <option value="{{emotion}}">{{emotion}}</option>
+        {% endfor %}
+        </select>
+
+        <br>
+        <br>
+
+        <label for="slider">What was your engagement level?</label><br>
+        <input type="range" id="explicit-engagement-level" name="explicit-engagement-level" min="0" max="10" value="0">
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

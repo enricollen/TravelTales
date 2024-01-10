@@ -12,6 +12,8 @@ from retrievalSystem import RetrievalSystem
 
 from ast import literal_eval
 
+import csv
+
 load_dotenv()
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -24,7 +26,10 @@ USERS_TSV_PATH = os.path.join(SCRIPT_DIRECTORY, USERS_TSV_FILENAME)
 COLL_CSV_FILENAME=os.getenv("COLL_CSV_FILENAME")
 COLL_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, COLL_CSV_FILENAME)
 
+FEEDBACK_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, os.getenv("FEEDBACK_CSV_FILENAME"))
+
 CATEGORIES = os.getenv("CATEGORIES").split(',')
+EMOTIONS_LIST=['neutral', 'disgust', 'calm', 'angry', 'fear', 'sad', 'happy', 'surprise']
 
 FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.AUDIO_OK: 'Good audio',
@@ -33,6 +38,17 @@ FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.NO_VOICE_FOUND: 'No voice found in audio',
     pveagle.EagleProfilerEnrollFeedback.QUALITY_ISSUE: 'Low audio quality due to bad microphone or environment'
 }
+
+def append_to_feedback_csv(data : dict):
+    with open(FEEDBACK_CSV_PATH, 'a', newline='') as csvfile:
+        fieldnames = data.keys()
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        # Check if the file is empty and write headers if needed
+        if csvfile.tell() == 0:
+            writer.writeheader()
+
+        writer.writerow(data)
 
 def get_users_df():
 
@@ -249,21 +265,44 @@ def create_app():
         """
         return send_from_directory('generated_audio', path)
 
+    @app.route('/feedback-form', methods=['GET'])
+    def collect_user_feedback():
+        news_link = request.args.get('news-link')
+        import ast
+        user_infos = ast.literal_eval(request.args.get('user-infos'))
+        user_infos['news-link'] = news_link
+        return render_template('feedback-form.html', my_dict=user_infos, 
+                               title=f"Collecting feedback for {user_infos['username']}", 
+                               news_link=news_link, emotions=EMOTIONS_LIST)
+    
+    @app.route('/feedback-submit', methods=['POST'])
+    def store_feedback():
+        received_keys = request.form.keys()
+        data = {}
+        for key in received_keys:
+            data[key] = request.form.get(key)
+        
 
-    @app.route('/feedback', methods=['POST'])
-    def users_feedback(feedbacks_dict):
-        """
-            Client sends the users' feedback w.r.t. the proposed news in a dictionary       
+        #print(data)
 
-            feedbacks_dict: the users feedbacks in the following format:
-            {   proposed_news_id: : {
-                'passenger_id1': 'engagement_lvl1',
-                'passenger_id2': 'engagement_lvl2',
-                ...
-                }
-            }
-        """
-        pass
+        append_to_feedback_csv(data)
+        #return f"Feedback stored successfully for the user {data['username']}"
+        return Response(f"Feedback stored successfully for the user {data['username']}", mimetype='application/json')
+    
+    #@app.route('/feedback', methods=['POST'])
+    #def users_feedback(feedbacks_dict):
+    #    """
+    #        Client sends the users' feedback w.r.t. the proposed news in a dictionary       
+    #
+    #        feedbacks_dict: the users feedbacks in the following format:
+    #        {   proposed_news_id: : {
+    #            'passenger_id1': 'engagement_lvl1',
+    #            'passenger_id2': 'engagement_lvl2',
+    #            ...
+    #            }
+    #        }
+    #    """
+    #    pass
 
     @app.route('/news_suggestion', methods=['GET'])
     def news_suggestion():
