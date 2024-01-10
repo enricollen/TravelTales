@@ -59,7 +59,7 @@ class FeedbackEstimator(object):
         if USE_VIDEO:
             visual_emotions_recognised = self.stop_video_recording()
 
-            num_visual_labels = max([len(l) for l in visual_emotions_recognised.values()])
+            num_visual_labels = max([0] + [len(l) for l in visual_emotions_recognised.values()])
 
 
         for audio_path in merged_speech_paths:
