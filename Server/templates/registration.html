@@ -218,7 +218,7 @@
                         formData.append(category, document.getElementById(category).value);
                     });
 
-                    fetch('http://localhost:5000/register', {
+                    fetch('/register', {
                         method: 'POST',
                         body: formData
                     })
