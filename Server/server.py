@@ -29,7 +29,7 @@ COLL_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, COLL_CSV_FILENAME)
 
 FEEDBACK_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, os.getenv("FEEDBACK_CSV_FILENAME"))
 
-USE_SSL = os.getenv("USE_SSL")
+USE_SSL = (os.getenv("USE_SSL").lower() in ["true", "1", "on"])
 CERTIFICATE_PATH = os.getenv("CERTIFICATE_PATH")
 
 CATEGORIES = os.getenv("CATEGORIES").split(',')
