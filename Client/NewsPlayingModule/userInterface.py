@@ -122,7 +122,7 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
         
         #call the callback function to update the feedback window with feedback faces
         #w.r.t. the user engagement level contained inside the feedback_dict
-        feedback_window.display_user_data(feedback_dict)
+        feedback_window.store_and_display_user_data(feedback_dict)
         
         #feedback_window.update_prints()
         #feedback_window.release_prints()
@@ -234,21 +234,31 @@ def player_window(news_player_obj: NewsPlayer, users_manager_obj: UsersManager, 
                 window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
         
         if feedback_window is not None and type(feedback_window) == FeedbackWindow:
-            event_feedback, values_feedback = feedback_window.window.read()
+            while feedback_window.is_closed() == False:
+                event_feedback, values_feedback = feedback_window.window.read() #feedback_window.window.read(2000)
 
-            if event_feedback == sg.WIN_CLOSED:
-                feedback_window.close()
-                if feedback_thread and feedback_thread.is_alive():
-                    feedback_estimator.stop_gathering()
-                    feedback_thread.join(10)
-                    print(f"Feedback thread was terminated correctly? {'no' if feedback_thread.is_alive() else 'yes'}")
-                window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
-            
-            elif event_feedback == 'btn_stop_gathering':
-                feedback_window.disable_stop_button()
-                feedback_estimator.stop_gathering()
+                if event_feedback == sg.WIN_CLOSED:
+                    feedback_window.close()
+                    if feedback_thread and feedback_thread.is_alive():
+                        feedback_estimator.stop_gathering()
+                        feedback_thread.join(10)
+                        print(f"Feedback thread was terminated correctly? {'no' if feedback_thread.is_alive() else 'yes'}")
+                    window['btn_feedback_gathering'].update(disabled=False, text='Collect Feedback')
                 
-                pass
+                elif event_feedback == 'btn_stop_gathering':
+                    feedback_window.disable_stop_button()
+                    feedback_estimator.stop_gathering()
+                    
+                elif event_feedback == 'user_table':
+                    #print("Received click on user_table, values['user_table'][0]: ", values_feedback['user_table'][0])
+                    #print("feedback_gathering_completed? -> ", feedback_window.feedback_gathering_completed())
+                    #feedback_window.window['user_table']
+                    clicked_row_index = values_feedback['user_table'][0]
+                    #print("Received a click on the row #" + str(clicked_row_index))
+                    feedback_window.store_feedback_for_user_index(clicked_row_index)                
+                    pass
+            #elif event_feedback == sg.TIMEOUT_KEY:
+            #    print("feedback_window.window.read(2000) timed out")
                 
 
     window.close()

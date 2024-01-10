@@ -4,6 +4,7 @@ from io import StringIO
 import sys
 
 DEFAULT_IMAGE_PATH = os.path.join("NewsPlayingModule", "Images", "travel-tales.png")
+SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
 
 USE_VIDEO = True if os.getenv("USE_VIDEO").lower() in ["true", "yes", "1"] else False
 WEBCAM_IMAGE_SIZE = (400, 300)
@@ -30,7 +31,10 @@ class FeedbackWindow:
         ]
 
         table_column = [
-            [sg.Table(values=[], headings=['Username', 'Duration', 'Audio Sentiment', 'Engagement'] + (['Video sentiment', 'Video engagement', 'Mixed engagement'] if USE_VIDEO else []), justification='center', key='user_table', max_col_width=20, def_col_width = 10, col_widths=10, hide_vertical_scroll=True, vertical_scroll_only=False, auto_size_columns=False)],
+            [sg.Table(values=[], headings=['Username', 'Duration', 'Audio Sentiment', 'Engagement'] + (['Video sentiment', 'Video engagement', 'Mixed engagement'] if USE_VIDEO else []),
+                       justification='center', key='user_table', max_col_width=20, def_col_width = 10, col_widths=10,
+                         hide_vertical_scroll=True, vertical_scroll_only=False, auto_size_columns=False,
+                         enable_events=True, select_mode=sg.TABLE_SELECT_MODE_BROWSE)],
         ]
 
         first_row = [sg.Column(output_column, background_color='black')]
@@ -91,7 +95,9 @@ class FeedbackWindow:
         self.closed = True
         self.window.close()
 
-    def display_user_data(self, feedback_data):
+    _user_data = False
+
+    def store_and_display_user_data(self, feedback_data):
         if self.is_closed():
             return
         
@@ -99,6 +105,7 @@ class FeedbackWindow:
             self.window[f'image_{i}'].Update(filename='')
             self.window[f'username_{i}'].Update(value='')
 
+        self._user_data = feedback_data
         # get user feedback data from dictionary
         user_feedback = feedback_data.get('users-feeback', [])
 
@@ -136,3 +143,22 @@ class FeedbackWindow:
             data.append([username, audio_duration, predicted_sentiment, engagement_score] + ([visual_emotion, visual_engagement_score, mixed_engagement_score] if USE_VIDEO else []))
 
         self.window['user_table'].update(values=data)
+
+        self.user_data_shown = True
+        #self.window['user_table'].Widget.item()
+
+    def feedback_gathering_completed(self) -> bool:
+        return bool(self._user_data)
+    
+    def store_feedback_for_user_index(self, user_index_in_table : int):
+        if self._user_data is None or 'users-feeback' not in self._user_data.keys():
+            print("[!] Cannot store user feedback! [!]")
+            print("Content of user_data: ", self._user_data)
+            return
+        user_infos = self._user_data['users-feeback'][user_index_in_table]
+        news_url = self._user_data['url-identifier']
+        #print("received a call to store_feedback_for_user_index for the user infos: ", user_infos)
+        import webbrowser
+
+        webbrowser.open(SERVER_BASE_URL + f"/feedback-form?news-link={news_url}&user-infos={user_infos}")
+
