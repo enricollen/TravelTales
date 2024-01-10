@@ -45,12 +45,12 @@ Alternative:
 - set the environment variable `DEFAULT_WEB_BROWSER` inside `Client/.env` and specify the path of the preferred browser to use:
 ```
 # MacOS
-chrome_path = 'open -a /Applications/Google\ Chrome.app %s'
+DEFAULT_WEB_BROWSER = 'open -a /Applications/Google\ Chrome.app %s'
 
 # Windows
-chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+DEFAULT_WEB_BROWSER = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
 
 # Linux
-chrome_path = '/usr/bin/google-chrome %s'
+DEFAULT_WEB_BROWSER = '/usr/bin/google-chrome %s'
 ```
   then start the client GUI and click on Register button. It will prompt to the registration page on the desired browser.
