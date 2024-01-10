@@ -85,7 +85,10 @@ while True:
 	elif event == "btn_register":
 		import webbrowser
 		try:
-			webbrowser.get(DEFAULT_WEB_BROWSER).open(SERVER_BASE_URL, new=1)
+			if DEFAULT_WEB_BROWSER != None:
+				webbrowser.get(DEFAULT_WEB_BROWSER).open(SERVER_BASE_URL, new=1)
+			else:
+				webbrowser.open(SERVER_BASE_URL, new=1)
 		except Exception:
 			webbrowser.open(SERVER_BASE_URL, new=1)
 
