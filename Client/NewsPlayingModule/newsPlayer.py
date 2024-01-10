@@ -7,6 +7,7 @@ env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
 load_dotenv(env_path)
 
 SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
+VERIFY_SSL = False
 
 class NewsPlayer:
     def __init__(self, passengers_list : list, already_played_news : list = []) -> None:
@@ -130,7 +131,7 @@ class NewsPlayer:
         print("Fetching news from the server...", end="")
         endpoint= SERVER_BASE_URL + f"/news_suggestion?users={';'.join(self.passengers)}"
         try:
-            response = requests.get(endpoint)
+            response = requests.get(endpoint, verify=VERIFY_SSL)
             response.raise_for_status()
             self.cached = response.json()
             self.__news_index = -1

@@ -3,10 +3,12 @@ from bs4 import BeautifulSoup
 from PIL import Image
 from io import BytesIO
 
+VERIFY_SSL = False
+
 def get_thumbnail_url(url, min_width=100, min_height=100):
     try:
         # Fetch webpage content
-        response = requests.get(url)
+        response = requests.get(url, verify=VERIFY_SSL)
         if response.status_code == 200:
             # Parse HTML content
             soup = BeautifulSoup(response.content, 'html.parser')
@@ -18,7 +20,7 @@ def get_thumbnail_url(url, min_width=100, min_height=100):
                 if img.has_attr('src'):
                     thumbnail_url = img['src']
                     # Fetch image content
-                    img_response = requests.get(thumbnail_url)
+                    img_response = requests.get(thumbnail_url, verify=VERIFY_SSL)
                     if img_response.status_code == 200:
                         # Open image using PIL/Pillow
                         img_data = BytesIO(img_response.content)

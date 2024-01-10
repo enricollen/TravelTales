@@ -9,6 +9,8 @@ load_dotenv()
 VOCAL_PROFILES_OUTPUT_DIR = os.getenv("VOCAL_PROFILES_OUTPUT_DIR")
 SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
 
+VERIFY_SSL = False
+
 class UsersManager:
 
     users_cached = None
@@ -53,7 +55,7 @@ class UsersManager:
             return UsersManager.users_cached
         url = SERVER_BASE_URL + "/users"
         try:
-            response = requests.get(url)
+            response = requests.get(url, verify=VERIFY_SSL)
             response.raise_for_status()  # Raise an exception for HTTP errors (4xx, 5xx)
             users_data = response.json()
             UsersManager.users_cached = users_data
@@ -97,7 +99,7 @@ class UsersManager:
             
             # if we arrive here, we have to download the updated version of voice profile
             try:		
-                response = requests.get(remote_url)
+                response = requests.get(remote_url, verify=VERIFY_SSL)
                 
                 if response.status_code == 200:
                     os.makedirs(os.path.dirname(localpath), exist_ok=True)

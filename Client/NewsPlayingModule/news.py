@@ -15,6 +15,8 @@ CATEGORY_STD_IMG_DIR = os.getenv("CATEGORY_STD_IMG_DIR")
 CATEGORIES = os.getenv("CATEGORIES").split(',')
 COLORS=os.getenv('COLORS').split(',')
 
+VERIFY_SSL = False
+
 def crop_to_dimensions(img : Image, target_width, target_height):
     width, height = img.size
     left = (width - target_width) / 2
@@ -47,7 +49,7 @@ class News:
         min_height = 200
         try:
             # Fetch webpage content
-            response = requests.get(self.get_news_link())
+            response = requests.get(self.get_news_link(), verify=VERIFY_SSL)
             if response.status_code == 200:
                 # Parse HTML content
                 soup = BeautifulSoup(response.content, 'html.parser')
@@ -59,7 +61,7 @@ class News:
                     if img.has_attr('src'):
                         thumbnail_url = img['src']
                         # Fetch image content
-                        img_response = requests.get(thumbnail_url)
+                        img_response = requests.get(thumbnail_url, verify=VERIFY_SSL)
                         if img_response.status_code == 200:
                             # Open image using PIL/Pillow
                             img_data = BytesIO(img_response.content)
@@ -112,7 +114,7 @@ class News:
 
         try:
             # Send a GET request to download the image
-            response = requests.get(remote_url)
+            response = requests.get(remote_url, verify=VERIFY_SSL)
             
             if response.status_code == 200:
                 # Open the image using PIL
@@ -198,7 +200,7 @@ class News:
         
         # if we arrive here, we have to download the updated version of the audio news
         try:		
-            response = requests.get(remote_url)
+            response = requests.get(remote_url, verify=VERIFY_SSL)
             
             if response.status_code == 200:
                 os.makedirs(os.path.dirname(localpath), exist_ok=True)
