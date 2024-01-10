@@ -39,9 +39,23 @@ FEEDBACK_TO_DESCRIPTIVE_MSG = {
     pveagle.EagleProfilerEnrollFeedback.QUALITY_ISSUE: 'Low audio quality due to bad microphone or environment'
 }
 
+def get_csv_header(file_path):
+    with open(file_path, 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        # Read the first row, which contains the header
+        header = next(reader, None)
+        return header
+
 def append_to_feedback_csv(data : dict):
-    with open(FEEDBACK_CSV_PATH, 'a', newline='') as csvfile:
+    
+    fieldnames = get_csv_header(FEEDBACK_CSV_PATH)
+    
+    if fieldnames is None:
+        print("Going to use as fieldnames for the csv the specified data.keys: ", data.keys())
         fieldnames = data.keys()
+
+    with open(FEEDBACK_CSV_PATH, 'a', newline='') as csvfile:
+        
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
         # Check if the file is empty and write headers if needed
