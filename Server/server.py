@@ -13,6 +13,7 @@ from retrievalSystem import RetrievalSystem
 from ast import literal_eval
 
 import csv
+import ssl
 
 load_dotenv()
 
@@ -27,6 +28,9 @@ COLL_CSV_FILENAME=os.getenv("COLL_CSV_FILENAME")
 COLL_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, COLL_CSV_FILENAME)
 
 FEEDBACK_CSV_PATH = os.path.join(SCRIPT_DIRECTORY, os.getenv("FEEDBACK_CSV_FILENAME"))
+
+USE_SSL = os.getenv("USE_SSL")
+CERTIFICATE_PATH = os.getenv("CERTIFICATE_PATH")
 
 CATEGORIES = os.getenv("CATEGORIES").split(',')
 EMOTIONS_LIST=['neutral', 'disgust', 'calm', 'angry', 'fear', 'sad', 'happy', 'surprise']
@@ -344,6 +348,14 @@ app = create_app()
 
 if __name__ == '__main__':
     os.makedirs(CLIENT_AUDIO_UPLOAD_PATH, exist_ok=True)
-    os.makedirs(SPEAKER_PROFILE_OUTPUT_PATH, exist_ok=True)    
-    #threaded=True to allow multiple connections
-    app.run(debug=True, host='0.0.0.0', threaded=True)  #, ssl_context=('cert.pem', 'pkey.pem')
+    os.makedirs(SPEAKER_PROFILE_OUTPUT_PATH, exist_ok=True)   
+    
+    if USE_SSL:
+        # Configure Flask to use the SSL context
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(certfile=os.path.join(CERTIFICATE_PATH, 'certificate.pem'), keyfile=os.path.join(CERTIFICATE_PATH, 'private_key.pem'))
+    
+        #threaded=True to allow multiple connections
+        app.run(ssl_context=context, debug=True, host='0.0.0.0', threaded=True)  # ssl_context=('cert.pem', 'pkey.pem')
+    else:
+        app.run(debug=True, host='0.0.0.0', threaded=True)
