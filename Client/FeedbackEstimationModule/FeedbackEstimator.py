@@ -261,13 +261,17 @@ class FeedbackEstimator(object):
                         if recognised_username not in self.passengers_onboard:
                             print(f"[!] The recognised user: {recognised_username} is not in the list of the current passengers [!]")
                         username = recognised_username
-                        analyzed = DeepFace.analyze(result['face'], actions=['emotion'], enforce_detection=False)
-                        #print(f"Received results from DeepFace.analyze method: ", analyzed)
+                        x, y, w, h = result['facial_area'].values()
+                        
+                        cv2.imwrite('temp-img-cropped.jpg', frame[y:y + w, x:x + h])
+
+                        analyzed = DeepFace.analyze('temp-img-cropped.jpg', actions=['emotion', 'age'], enforce_detection=False)
+                        print(f"Received results from DeepFace.analyze method: ", analyzed)
                         analyzed = analyzed[0]
                         if username not in self.gathered_frames_infos.keys():
                             self.gathered_frames_infos[username] = []
                         self.gathered_frames_infos[username].append(analyzed['dominant_emotion'])
-                        x, y, w, h = result['facial_area'].values()
+                    
                         frame = cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)  # Draw bounding box
                         label = f"Emotion: {analyzed['dominant_emotion']}"  # Create label text
                         frame = cv2.putText(frame, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)  # Display label
