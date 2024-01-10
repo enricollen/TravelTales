@@ -64,7 +64,7 @@ class News:
                             # Open image using PIL/Pillow
                             img_data = BytesIO(img_response.content)
                             img_pil = Image.open(img_data)
-                            
+                                
                             # Check image dimensions
                             img_width, img_height = img_pil.size
                             if img_width >= min_width and img_height >= min_height:
@@ -72,7 +72,7 @@ class News:
                 return None
             else:
                 return None
-        except requests.RequestException as e:
+        except Exception as e:
             print(f"Error: {e}")
             return None
         #import random
