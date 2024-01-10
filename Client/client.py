@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import requests
+import os
 
 from NewsPlayingModule.news import News
 from NewsPlayingModule.newsPlayer import NewsPlayer
@@ -8,6 +8,11 @@ from FeedbackEstimationModule.FeedbackEstimator import FeedbackEstimator
 
 from usersManager import UsersManager
 from user import User
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DEFAULT_WEB_BROWSER=os.getenv("DEFAULT_WEB_BROWSER")
 
 
 def load_initial_state(file_path : str):
@@ -79,7 +84,11 @@ while True:
 		break
 	elif event == "btn_register":
 		import webbrowser
-		webbrowser.open(SERVER_BASE_URL)
+		try:
+			webbrowser.get(DEFAULT_WEB_BROWSER).open(SERVER_BASE_URL, new=1)
+		except Exception:
+			webbrowser.open(SERVER_BASE_URL, new=1)
+
 	elif event == "btn_get_users":#"Get Users List":
 		#global user_list_layout
 		user_list_layout = [
