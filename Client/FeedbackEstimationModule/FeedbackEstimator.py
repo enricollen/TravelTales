@@ -265,7 +265,7 @@ class FeedbackEstimator(object):
                         
                         cv2.imwrite('temp-img-cropped.jpg', frame[y:y + w, x:x + h])
 
-                        analyzed = DeepFace.analyze('temp-img-cropped.jpg', actions=['emotion', 'age'], enforce_detection=False)
+                        analyzed = DeepFace.analyze('temp-img-cropped.jpg', actions=['emotion'], enforce_detection=False)
                         print(f"Received results from DeepFace.analyze method: ", analyzed)
                         analyzed = analyzed[0]
                         if username not in self.gathered_frames_infos.keys():
