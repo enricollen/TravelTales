@@ -59,6 +59,9 @@ class FeedbackEstimator(object):
         if USE_VIDEO:
             visual_emotions_recognised = self.stop_video_recording()
 
+            num_visual_labels = max([len(l) for l in visual_emotions_recognised.values()])
+
+
         for audio_path in merged_speech_paths:
             # 1. first predict audio sentiment
             predicted_sentiment = self.audioSentimentClassifier.predict(audio_path)
@@ -82,7 +85,7 @@ class FeedbackEstimator(object):
 
             if USE_VIDEO is True:
                 if username in visual_emotions_recognised.keys():
-                    users_emotions = list(visual_emotions_recognised[username])
+                    users_emotions = list(visual_emotions_recognised[username]) + ( ["NA"] * max(0, num_visual_labels - len(visual_emotions_recognised[username])) )
                     visual_emotion = max(set(users_emotions), key=users_emotions.count)
                     user_feedback["visual_emotion"] = visual_emotion
                     engagement_score_video = self.audioSentimentClassifier.estimate_user_engagement_video_only(visual_emotion, audio_path)
@@ -92,8 +95,8 @@ class FeedbackEstimator(object):
             feedbacks_dict["users-feeback"].append(user_feedback)
 
         #self.send_feedback_to_server(feedbacks_dict)
-        if USE_VIDEO:
-            print(f"returning feedback_dict which is: ", feedbacks_dict)
+        #if USE_VIDEO:
+        #    print(f"returning feedback_dict which is: ", feedbacks_dict)
         return feedbacks_dict
     
     def get_audio_duration(self, audio_path):
