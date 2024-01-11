@@ -1,5 +1,45 @@
-# TravelTales
-In-Car automatic conversation topic suggester
+#TravelTales 🚗💬
+Welcome to the documentation for TravelTales, your go-to in-car conversation recommendation system! 🌟
+
+Explore the innovative TravelTales system, a solution balancing in-car entertainment with driver safety. Leveraging AI and ML, TravelTales provides personalized conversation prompts, enhancing the overall driving experience. 🚀
+
+Introducing TravelTales, an in-car conversation recommendation system. Using AI, ML, and voice recognition, it creates personalized conversation prompts for an engaging and safe journey.
+
+##State of the Art
+Delve into conversation engagement monitoring, drawing inspiration from Morreale et al.'s multimodal approach. Our project adopts a similar strategy, integrating audio sentiment, speech rate, and video sentiment for dynamic engagement estimation.
+
+##Architecture
+Discover the client-server structure of TravelTales. The client, implemented in Python, runs on a Raspberry Pi, while the server, built with Python Flask, handles requests and responses. The indexer, created in Google Colab, uses GPUs for efficient processing.
+
+##Indexer
+Explore the comprehensive Indexer module, where the collection of news is created, including the TTS model, Summarization model, and News Embedding model.
+
+###TTS Model
+Utilizing Coqui TTS, TravelTales generates natural-sounding audio news tracks. The TTS model creates audio from news article summaries, enhancing the in-car experience.
+
+###Summarization Model
+The summarization model uses Latent Semantic Analysis and a BART Transformer for concise news summaries. Explore the application of these techniques through a sports news example.
+
+###News Embedding Model
+Learn about the news embedding model's real-valued vector generation from textual input. Based on a DistilBERT model, it maps news articles into a 14-dimensional space for effective similarity calculations. Operations include summarization, embedding creation, and audio generation from news articles.
+
+##Server
+Implemented in Flask, the server handles user registration, audio processing, news suggestions, and feedback. Explore endpoints for user interactions and data retrieval.
+
+###Engagement Level Regressor
+Learn about the heuristic-based engagement level estimation, considering speech rate, sentiment, and audio duration.
+
+###Speaker Recognition Module
+Discover the real-time speaker recognition module using Picovoice Eagle API, capturing and storing speaker-specific speech segments.
+
+###Audio Sentiment Classification
+Explore the module predicting sentiment from audio files, leveraging a pre-trained CNN for sentiment analysis.
+
+###Data Visualization Module
+This module provides a GUI for data visualization, showcasing PCA and radar chart plots to represent user interests and news categories.
+
+##Further Improvements
+While TravelTales presents a significant advancement, future enhancements could involve iterative updates based on passenger feedback. This approach ensures continual adaptability, refining the accuracy and relevance of personalized conversation prompts. The challenges of obtaining a suitable dataset for training an updating model and tuning the update process parameters must be addressed for successful implementation. Feel free to embark on a journey with TravelTales! 🌐🗣️
 
 
 
