@@ -3,6 +3,20 @@ In-Car automatic conversation topic suggester
 
 
 
+## News Player Interface
+
+![image](https://github.com/enricollen/TravelTales/assets/63967908/62044e29-1920-48ab-8a0c-247f30672080)
+
+
+## Feedback gathering
+
+![image](https://github.com/enricollen/TravelTales/assets/63967908/c1e8830b-1a76-4c54-8ce3-05b03607fca0)
+
+## Data Visualization
+
+![image](https://github.com/enricollen/TravelTales/assets/63967908/1d3011fa-538a-4d05-8193-d4b4a69eaad0)
+
+
 ### Server deployment
 
 Run the server.py script from the /Server directory.
