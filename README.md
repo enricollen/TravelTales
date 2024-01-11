@@ -62,7 +62,7 @@ The name of the generated docker container corresponds to the folder name where 
 
 ## Client 
 For the registration of a new user:
-- open a web browser and visit: `server_ip_addr:5000`
+- open a web browser and visit: `https://server_ip_addr:5000`
 
 Alternative:
 - set the environment variable `DEFAULT_WEB_BROWSER` inside `Client/.env` and specify the path of the preferred browser to use:
