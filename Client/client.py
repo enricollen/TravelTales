@@ -13,7 +13,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DEFAULT_WEB_BROWSER=os.getenv("DEFAULT_WEB_BROWSER")
+AUDIO_SPEECHS_FOLDER = os.getenv("AUDIO_SPEECHS_FOLDER")
+SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
 
+def empty_folder(folder_path):
+    if not os.path.exists(folder_path):
+        print(f"Folder {folder_path} does not exist.")
+        return
+
+    files = os.listdir(folder_path)
+
+    for file_name in files:
+        file_path = os.path.join(folder_path, file_name)
+
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(f"Error deleting file {file_path}: {e}")
 
 def load_initial_state(file_path : str):
 	"""
@@ -32,14 +49,10 @@ news_player_obj = NewsPlayer(users_manager_obj.get_passengers_usernames(), load_
 
 feedback_estimator = FeedbackEstimator(users_manager_obj.get_passengers_usernames())
 
-import os
-
-SERVER_BASE_URL = os.getenv("SERVER_BASE_URL")
+empty_folder(AUDIO_SPEECHS_FOLDER)
 
 WINDOW_WIDTH=700
 WINDOW_HEIGHT=500
-
-#sg.theme('Reddit')
 
 layout = [
 		[sg.Column([
