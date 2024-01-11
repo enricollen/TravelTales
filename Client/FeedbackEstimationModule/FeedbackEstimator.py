@@ -15,7 +15,7 @@ USE_VIDEO = True if os.getenv("USE_VIDEO").lower() in ["true", "yes", "1"] else 
 
 if USE_VIDEO:
     from deepface import DeepFace
-    DEEPFACE_DATABASE_PATH = os.getenv("DEEPFACE_DATABASE_PATH")
+    DEEPFACE_DATABASE_PATH = os.path.abspath(os.getenv("DEEPFACE_DATABASE_PATH"))#os.getenv("DEEPFACE_DATABASE_PATH")
 
 
 class FeedbackEstimator(object):
@@ -247,7 +247,11 @@ class FeedbackEstimator(object):
                         ret = DeepFace.find(result['face'], DEEPFACE_DATABASE_PATH, enforce_detection=False)
                         if len(ret) > 0 and len(ret[0]) > 0:
                             try:
-                                default_username = recognised_username = (ret[0].iloc[0]['identity']).replace(DEEPFACE_DATABASE_PATH, "").split("/")[0].replace("\\", "").replace(".jpg", "")
+                                default_username = recognised_username = (os.path.abspath(ret[0].iloc[0]['identity'])).replace(DEEPFACE_DATABASE_PATH, "").replace("\\", "/").split("/")[1].replace(".jpg", "")  #instead of index -2 index 0
+                                print(f"DEEPFACE_DATABASE_PATH", DEEPFACE_DATABASE_PATH)
+                                print(f"(ret[0].iloc[0]['identity']", ret[0].iloc[0]['identity'])
+                                print(f"os.path.abspath(ret[0].iloc[0]['identity']): ", os.path.abspath(ret[0].iloc[0]['identity']))
+                                print(f"")
                                 #print("deepface find username string: ", recognised_username)
                             except Exception as e:
                                 print(e)
