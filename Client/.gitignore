@@ -1,2 +1,7 @@
 audio-news/
 speaker_profiles/
+news-images/
+SpeakerRecognitionModule/resources/
+temp_img.jpg
+temp-img-cropped.jpg
+passengers_onboard.txt

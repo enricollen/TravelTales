@@ -85,7 +85,7 @@ class FeedbackEstimator(object):
 
             if USE_VIDEO is True:
                 if username in visual_emotions_recognised.keys():
-                    users_emotions = list(visual_emotions_recognised[username]) + ( ["NA"] * max(0, num_visual_labels - len(visual_emotions_recognised[username])) )
+                    users_emotions = list(visual_emotions_recognised[username]) + ( ["NA"] * max(0, num_visual_labels // 2 - len(visual_emotions_recognised[username])) )
                     visual_emotion = max(set(users_emotions), key=users_emotions.count)
                     user_feedback["visual_emotion"] = visual_emotion
                     engagement_score_video = self.audioSentimentClassifier.estimate_user_engagement_video_only(visual_emotion, audio_path)
@@ -251,8 +251,6 @@ class FeedbackEstimator(object):
                                 print(f"DEEPFACE_DATABASE_PATH", DEEPFACE_DATABASE_PATH)
                                 print(f"(ret[0].iloc[0]['identity']", ret[0].iloc[0]['identity'])
                                 print(f"os.path.abspath(ret[0].iloc[0]['identity']): ", os.path.abspath(ret[0].iloc[0]['identity']))
-                                print(f"")
-                                #print("deepface find username string: ", recognised_username)
                             except Exception as e:
                                 print(e)
                                 print(ret)
