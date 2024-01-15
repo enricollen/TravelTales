@@ -102,6 +102,24 @@ This module provides a GUI for data visualization, showcasing PCA and radar char
 ## Further Improvements
 While TravelTales presents a significant advancement, future enhancements could involve iterative updates based on passenger feedback. This approach ensures continual adaptability, refining the accuracy and relevance of personalized conversation prompts. The challenges of obtaining a suitable dataset for training an updating model and tuning the update process parameters must be addressed for successful implementation. Feel free to embark on a journey with TravelTales! 🌐🗣️
 
+## Demo Videos
+
+### User registration and hardware architecture (click to play)
+
+[![User registration and hardware architecture video](https://img.youtube.com/vi/PPvsExLQKnY/0.jpg)](https://www.youtube.com/watch?v=PPvsExLQKnY)
+
+### News player interface (click to play)
+
+[![News player interface](https://img.youtube.com/vi/2C0YHlqBly8/0.jpg)](https://www.youtube.com/watch?v=2C0YHlqBly8)
+
+### Data visualization interface (click to play)
+
+[![Data visualization interface](https://img.youtube.com/vi/DUHmPTPL8uU/0.jpg)](https://www.youtube.com/watch?v=DUHmPTPL8uU)
+
+### Feedback gathering demo with face recognition and explicit user feedback store system (click to play)
+
+[![Feedback gathering demo with face recognition on laptop](https://img.youtube.com/vi/qlnyNr1SLLE/0.jpg)](https://www.youtube.com/watch?v=qlnyNr1SLLE)
+
 
 
 
